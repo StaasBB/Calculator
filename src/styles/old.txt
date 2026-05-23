@@ -1,0 +1,329 @@
+/* ==========================================================================
+   ОРИГИНАЛЬНЫЕ ПЕРЕМЕННЫЕ ЦВЕТОВ RFAB (СТАБИЛЬНЫЙ ВАРИАНТ)
+   ========================================================================== */
+:root {
+    --red: #ea9999;
+    --light-red: #f4cccc;
+    --green: #b6d7a8;
+    --light-green: #d9ead3;
+    --blue: #9fc4e9;
+    --light-blue: #cfe2f3;
+    --yellow: #ffe599;
+    --light-yellow: #fff2cc;
+    --purple: #b4a7d6;
+    --light-purple: #d9d2e9;
+}
+
+html, body {
+    height: 100%;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0px;
+    overflow: hidden; /* Выключаем скролл для калькуляторной платформы */
+    background-image: url("../assets/background.jpg");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-attachment: fixed;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+}
+
+a {
+    color: black;
+}
+
+/* ==========================================================================
+   ОРИГИНАЛЬНЫЙ HEADER RFAB (МНОГОСЛОЙНЫЙ)
+   ========================================================================== */
+header {
+    background: transparent;
+    width: 100%;
+    height: 60px;
+    display: flex;
+    position: fixed;
+    top: 0;
+    left: 0;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+}
+
+header::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: -2;
+}
+
+.header-img-a {
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.header-img {
+    width: auto;
+    height: 30px;
+    transition: 0.2s all ease;
+}
+
+.header-social-platforms {
+    display: flex;
+    gap: 20px;
+}
+
+.header-social-platforms .header-img {
+    display: flex;
+    gap: 20px;
+    height: 28px;
+}
+
+.header-separator-200 {
+    width: 200px;
+}
+
+.header-links {
+    display: flex;
+    height: 100%;
+    align-items: center;
+}
+
+.header-link {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 400;
+    font-size: 14px;
+    position: relative;
+    color: white;
+    padding: 18px 24px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.header-link.double-row {
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+    line-height: 15px;
+    font-size: 12.5px;
+}
+
+.header-link::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(rgb(113, 90, 36), transparent);
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    z-index: -1;
+}
+
+.header-link:hover::after {
+    opacity: 1;
+}
+
+.header-link.active {
+    color: #f6b36a;
+}
+
+.header-img:hover {
+    filter: brightness(0.6);
+}
+
+/* ==========================================================================
+   ОФИЦИАЛЬНАЯ ПАНЕЛЬ UTILITIES BAR
+   ========================================================================== */
+.tab-bar.app-utilities-bar {
+    background-color: transparent;
+    display: flex;
+    justify-content: center;
+    padding: 0px;
+    gap: 0px;
+    position: fixed;
+    top: 60px;
+    z-index: 99;
+    width: 100%;
+    height: 45px;
+    box-sizing: border-box;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.tab-bar.app-utilities-bar::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: -2;
+}
+
+.tab-bar.app-utilities-bar .tab-button {
+    font-family: 'Oswald', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    position: relative;
+    padding: 0px 24px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    color: #ddd;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+.tab-bar.app-utilities-bar .tab-button::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(rgb(113, 90, 36), transparent);
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    z-index: -1;
+}
+
+.tab-bar.app-utilities-bar .tab-button:hover::after {
+    opacity: 1;
+}
+
+.tab-bar.app-utilities-bar .tab-button:focus {
+    outline: none;
+}
+
+.tab-bar.app-utilities-bar .tab-button.btn-danger {
+    color: var(--light-red);
+    transition: all 0.3s ease;
+}
+
+.tab-bar.app-utilities-bar .tab-button.btn-danger::after {
+    background: linear-gradient(rgba(150, 40, 27, 0.4), transparent) !important;
+}
+
+.tab-bar.app-utilities-bar .tab-button.btn-danger:hover {
+    color: #ffffff !important;
+}
+
+/* ==========================================================================
+   КОНТЕЙНЕР CANVAS И КОРРЕКЦИЯ СИММЕТРИИ
+   ========================================================================== */
+#canvas-container {
+    width: 100vw;
+    height: calc(100vh - 165px);
+    margin-top: 105px;
+    margin-bottom: 60px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    overflow: auto;
+}
+
+canvas {
+    display: block;
+    touch-action: none;
+    background-color: transparent;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}
+
+/* ==========================================================================
+   ОРИГИНАЛЬНЫЙ ТУЛТИП И ФУТЕР
+   ========================================================================== */
+#calculator-tooltip {
+    position: fixed;
+    pointer-events: none;
+    display: none;
+    z-index: 9999;
+    width: max-content;
+    padding: 15px;
+    border-radius: 8px;
+    background: linear-gradient(180deg, rgba(20, 20, 24, 0.97) 0%, rgba(11, 11, 13, 0.99) 100%);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    box-sizing: border-box;
+    white-space: normal;
+    letter-spacing: 0.3px;
+    opacity: 0;
+    transform: translateY(5px);
+    transition: opacity 0.12s ease-out, transform 0.12s ease-out;
+}
+
+#calculator-tooltip.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #f6b36a rgba(0, 0, 0, 0.85);
+}
+
+footer {
+    background-color: rgba(0, 0, 0, 0.8);
+    width: 100%;
+    height: 60px;
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    justify-content: center;
+    align-items: center;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    box-sizing: border-box;
+    z-index: 100;
+}
+
+.footer-text {
+    display: flex;
+    flex-direction: column;
+    font-family: 'Oswald', sans-serif;
+    font-weight: 400;
+    text-align: center;
+}
+
+@media (hover: none) and (pointer: coarse) {
+    footer {
+        width: calc(100% - 20px);
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+    .footer-text {
+        display: none;
+    }
+}
+
+footer .header-social-platforms .header-img {
+    height: 20px !important;
+    width: auto;
+    margin-bottom: 10px;
+}
+
+footer p a {
+    color: white;
+    text-decoration: underline;
+}
+
+footer p {
+    color: white;
+    font-size: 14px;
+    margin-top: 2px;
+    margin-bottom: 2px;
+    padding: 0px;
+    background-color: transparent;
+}

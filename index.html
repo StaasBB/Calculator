@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>RFAB Web Perk Calculator</title>
+    <link rel="stylesheet" href="./src/styles/common.css">
+</head>
+<body>
+
+    <!-- ОРИГИНАЛЬНЫЙ ХЕДЕР RFAB -->
+    <header>
+        <a class="header-img-a" href="https://skyrimrequiem.ru">
+            <img class="header-img" src="./src/assets/logo.png" alt="RFAB Logo"/>
+        </a>
+        <div style="width:100px"></div>
+        <div class="header-social-platforms">
+            <a class="header-img-a" href="https://t.me/SkyrimRFAB" target="_blank"><img class="header-img" src="./src/assets/social/telegram.svg"/></a>
+            <a class="header-img-a" href="https://discord.gg/GqbBXeuytN" target="_blank"><img class="header-img" src="./src/assets/social/discord.png"/></a>
+            <a class="header-img-a" href="https://www.youtube.com/c/BlindWalker/videos" target="_blank"><img class="header-img" src="./src/assets/social/youtube.png"/></a>
+            <a class="header-img-a" href="https://www.twitch.tv/blindwalkerboy" target="_blank"><img class="header-img" src="./src/assets/social/twitch.png"/></a>
+            <a class="header-img-a" href="https://boosty.to/rfabteam" target="_blank"><img class="header-img" src="./src/assets/social/boosty.png"/></a>
+        </div>
+        <div class="header-separator-200"></div>
+        <div class="header-links">
+            <a class="header-link" href="https://t.me/SkyrimRFAB" target="_blank">СКАЧАТЬ</a>
+            <a class="header-link" href="https://skyrimrequiem.ru/pages/media/" target="_blank">МЕДИА</a>
+            <a class="header-link" href="https://skyrimrequiem.ru/pages/leaderboard/" target="_blank">ПАНТЕОН</a>
+            <a class="header-link" href="https://skyrimrequiem.ru/pages/library/" target="_blank">БАЗА ЗНАНИЙ</a>
+            <a class="header-link active double-row" href="#">КАЛЬКУЛЯТОР<br>ПЕРКОВ</a>
+            <a class="header-link" href="https://drive.google.com/drive/folders/1-t0x5t0t_Hq_HeQChVD1PXV3zpYRUmPV" target="_blank">OBLIVION</a>
+        </div>
+    </header>
+
+    <!-- ВТОРОЙ ХЕДЕР (ТЕПЕРЬ ТУТ ТОЛЬКО КНОПКИ) -->
+    <div class="tab-bar app-utilities-bar">
+        <button class="tab-button" id="btn-share">Поделиться билдом</button>
+        <button class="tab-button" id="trigger-load">Загрузить</button>
+        <button class="tab-button" id="trigger-save">Сохранить</button>
+        <button class="tab-button" id="btn-reset-tree">Сбросить ветку</button>
+        <button class="tab-button btn-danger" id="btn-reset-all">Сбросить всё</button>
+        <!-- ИСПРАВЛЕНО: Отсюда блок profiles-dropdown полностью УДАЛЕН -->
+    </div>
+
+    <!-- КОНТЕЙНЕР ДЛЯ ХОЛСТА КАЛЬКУЛЯТОРА -->
+    <main id="canvas-container">
+        <canvas id="gameCanvas" width="960" height="800"></canvas>
+    </main>
+
+    <!-- ОРИГИНАЛЬНЫЙ ФУТЕР RFAB -->
+    <footer>
+        <a class="header-img-a" href="https://skyrimrequiem.ru">
+            <img class="header-img" src="./src/assets/logo.png"/>
+        </a>
+        <div style="width:100px"></div>
+        <div class="footer-text">
+            <p>Выражаем благодарность Xandr за разрешение на создание нашего проекта на базе Requiem for a Dream.</p>
+            <p>
+                <a href="https://discord.com" target="_blank">Discord оригинального Requiem от Xarrian и ogerboss</a> 
+                | 
+                <a href="https://discord.com" target="_blank">Discord Requiem for a Dream от Xandr</a>
+            </p>
+        </div>
+        <div style="width:100px"></div>
+        <div class="header-social-platforms">
+            <a class="header-img-a" href="https://t.me/SkyrimRFAB" target="_blank"><img class="header-img" src="./src/assets/social/telegram.svg"/></a>
+            <a class="header-img-a" href="https://discord.gg/GqbBXeuytN" target="_blank"><img class="header-img" src="./src/assets/social/discord.png"/></a>
+            <a class="header-img-a" href="https://www.youtube.com/c/BlindWalker/videos" target="_blank"><img class="header-img" src="./src/assets/social/youtube.png"/></a>
+            <a class="header-img-a" href="https://www.twitch.tv/blindwalkerboy" target="_blank"><img class="header-img" src="./src/assets/social/twitch.png"/></a>
+            <a class="header-img-a" href="https://boosty.to/rfabteam" target="_blank"><img class="header-img" src="./src/assets/social/boosty.png"/></a>
+        </div>
+    </footer>
+    <!-- ИСПРАВЛЕНО: Выпадающее меню перенесено в самый корень body, чтобы экранный JS-расчет совпал на 100% -->
+    <div class="profiles-dropdown" id="profiles-dropdown-list"></div>
+
+    <script type="module" src="./src/app.js"></script>
+</body>
+</html>
