@@ -11,9 +11,6 @@ export class CanvasRender {
         this.uiManager = new UIManager(this.ctx, this.sidebarWidth);
     }
 
-    /**
-     * Позволяет динамически вытащить HEX/RGB цвет из :root в CSS
-     */
     getColorFromCSS(variableName) {
         return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim() || "#555";
     }
@@ -21,10 +18,9 @@ export class CanvasRender {
     render(activeTree, allTrees) {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-        // Получаем сумму очков
         const totalPoints = allTrees.reduce((sum, t) => sum + t.nodes.filter(n => n.isActive).length, 0);
 
-        // 1. Отрисовка Сайдбара (UIManager внутри сам считает цвета кнопок через глобальную функцию)
+        // 1. Отрисовка Сайдбара 
         this.uiManager.renderSidebar(allTrees, activeTree, totalPoints, this.getColorFromCSS.bind(this));
 
         // 2. Рисуем фон центрального игрового окна
@@ -46,9 +42,7 @@ export class CanvasRender {
     }
 
     renderTree(activeTree) {
-        // Получаем основной и блеклый цвет из CSS для текущей ветки
         const mainColor = this.getColorFromCSS(`--${activeTree.themeColor}`);
-        const lightColor = this.getColorFromCSS(`--light-${activeTree.themeColor}`);
 
         this.ctx.save();
         // Красивое название в фоне (большая тень)
@@ -63,7 +57,7 @@ export class CanvasRender {
         this.ctx.textBaseline = "middle";
         this.ctx.fillText(activeTree.title, 40, 45);
 
-        // 3. ДИНАМИЧЕСКИЙ РАСЧЕТ ХАРАКТЕРИСТИК ВЕТКИ
+        // ИСПРАВЛЕНО: ДИНАМИЧЕСКИЙ РАСЧЕТ И ПРОВЕРКА levelReq ХАРАКТЕРИСТИК ВЕТКИ
         const activeNodes = activeTree.nodes.filter(n => n.isActive);
         const activeCount = activeNodes.length; 
         
@@ -75,7 +69,7 @@ export class CanvasRender {
             }
         });
 
-        // ИСПРАВЛЕНО: Меняем слово "Навык" на "Уровень" для дополнительных веток (classType === "extra")
+        // ИСПРАВЛЕНО: Меняем "Навык" на "Уровень" для дополнительных веток (classType === "extra")
         const labelPrefix = activeTree.classType === "extra" ? "Уровень" : "Навык";
 
         const statusText = maxSkillRequired > 0 
@@ -99,9 +93,8 @@ export class CanvasRender {
                     this.ctx.moveTo(x, y);
                     this.ctx.lineTo(parent.x, parent.y);
                     
-                    // ИСПРАВЛЕНО: Линия горит ярким цветом темы только если активны И родитель, И потомок!
+                    // Исправлено: Линия горит ярким цветом только если активны оба участника связи
                     const isLineActive = node.isActive && parent.isActive;
-                    
                     this.ctx.strokeStyle = isLineActive ? mainColor : "#222226";
                     this.ctx.lineWidth = 3;
                     this.ctx.stroke();

@@ -1,5 +1,6 @@
+
 /* ==========================================================================
-   ОРИГИНАЛЬНЫЕ ПЕРЕМЕННЫЕ ЦВЕТОВ RFAB (СТАБИЛЬНЫЙ ВАРИАНТ)
+   1. ПЕРЕМЕННЫЕ ЦВЕТОВ И ИНИЦИАЛИЗАЦИЯ ЭКРАНА
    ========================================================================== */
 :root {
     --red: #ea9999;
@@ -21,7 +22,7 @@ html, body {
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0px;
-    overflow: hidden; /* Выключаем скролл для калькуляторной платформы */
+    overflow: hidden; /* Отключаем скролл самого окна браузера для монолитности */
     background-image: url("../assets/background.jpg");
     background-size: cover;
     background-repeat: no-repeat;
@@ -39,8 +40,14 @@ a {
     color: black;
 }
 
+/* Настройки кастомного оранжевого скроллбара для выпадающих списков */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #f6b36a rgba(0, 0, 0, 0.85);
+}
+
 /* ==========================================================================
-   ОРИГИНАЛЬНЫЙ HEADER RFAB (МНОГОСЛОЙНЫЙ)
+   2. ОРИГИНАЛЬНЫЙ МНОГОСЛОЙНЫЙ HEADER RFAB
    ========================================================================== */
 header {
     background: transparent;
@@ -83,9 +90,8 @@ header::before {
 }
 
 .header-social-platforms .header-img {
-    display: flex;
-    gap: 20px;
     height: 28px;
+    width: auto;
 }
 
 .header-separator-200 {
@@ -100,7 +106,7 @@ header::before {
 
 .header-link {
     font-family: 'Oswald', sans-serif;
-    font-weight: 400;
+    font-weight: 400; /* Буквы тонкие и аккуратные, как в оригинале */
     font-size: 14px;
     position: relative;
     color: white;
@@ -121,6 +127,7 @@ header::before {
     font-size: 12.5px;
 }
 
+/* Плавный золотой градиент наведения */
 .header-link::after {
     content: "";
     position: absolute;
@@ -144,7 +151,7 @@ header::before {
 }
 
 /* ==========================================================================
-   ОФИЦИАЛЬНАЯ ПАНЕЛЬ UTILITIES BAR
+   3. ОФИЦИАЛЬНАЯ ПАНЕЛЬ UTILITIES BAR (ВТОРОЙ ХЕДЕР)
    ========================================================================== */
 .tab-bar.app-utilities-bar {
     background-color: transparent;
@@ -206,6 +213,7 @@ header::before {
     outline: none;
 }
 
+/* Опасная кнопка "Сбросить всё" */
 .tab-bar.app-utilities-bar .tab-button.btn-danger {
     color: var(--light-red);
     transition: all 0.3s ease;
@@ -220,11 +228,11 @@ header::before {
 }
 
 /* ==========================================================================
-   КОНТЕЙНЕР CANVAS И КОРРЕКЦИЯ СИММЕТРИИ
+   4. КОНТЕЙНЕР ХОЛСТА И ДИНАМИЧЕСКИЙ ТУЛТИП ОПИСАНИЙ
    ========================================================================== */
 #canvas-container {
     width: 100vw;
-    height: calc(100vh - 165px);
+    height: calc(100vh - 165px); /* Автоматический проем под ваше разрешение */
     margin-top: 105px;
     margin-bottom: 60px;
     display: flex;
@@ -241,9 +249,6 @@ canvas {
     image-rendering: crisp-edges;
 }
 
-/* ==========================================================================
-   ОРИГИНАЛЬНЫЙ ТУЛТИП И ФУТЕР
-   ========================================================================== */
 #calculator-tooltip {
     position: fixed;
     pointer-events: none;
@@ -268,11 +273,9 @@ canvas {
     transform: translateY(0);
 }
 
-* {
-    scrollbar-width: thin;
-    scrollbar-color: #f6b36a rgba(0, 0, 0, 0.85);
-}
-
+/* ==========================================================================
+   5. ОРИГИНАЛЬНЫЙ ФУТЕР И ЕГО ИКОНКИ
+   ========================================================================== */
 footer {
     background-color: rgba(0, 0, 0, 0.8);
     width: 100%;
@@ -309,7 +312,7 @@ footer {
 }
 
 footer .header-social-platforms .header-img {
-    height: 20px !important;
+    height: 20px !important; /* Уменьшаем иконки в подвале, чтобы не были огромными */
     width: auto;
     margin-bottom: 10px;
 }
@@ -329,25 +332,20 @@ footer p {
 }
 
 /* ==========================================================================
-   ОПТИМИЗИРОВАННАЯ ВЫПАДАЮЩАЯ ПАНЕЛЬ СОХРАНЕНИЙ ВО ВТОРОМ ХЕДЕРЕ
+   6. ИНТЕРФЕЙС ВЫПАДАЮЩИХ ПРОФИЛЕЙ СОХРАНЕНИЙ
    ========================================================================== */
 .profiles-dropdown {
     display: none;
     flex-direction: column;
     background: #111113;
-    border: 1px solid #f6b36a; /* Фирменная золотая рамка */
+    border: 1px solid #f6b36a; 
     border-radius: 5px;
     max-height: 260px;
     overflow-y: auto;
-    
-    /* ИСПРАВЛЕНО: Теперь выпадашка позиционируется абсолютно под вторым хедером */
-    position: absolute; 
-    top: 45px; /* Четко под нижней границей app-utilities-bar */
-    left: 50%;
-    transform: translateX(-50%); /* Идеальное центрирование списка по центру экрана */
-    width: 320px; /* Фиксированная комфортная ширина списка */
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.9);
-    z-index: 200; /* Гарантированно поверх Canvas и левого меню веток */
+    position: fixed; /* Фиксировано по расчетным координатам из JS */
+    width: 320px; 
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
+    z-index: 200; 
 }
 
 .profiles-dropdown.open {
@@ -397,77 +395,7 @@ footer p {
     opacity: 1;
 }
 
-/* Модальное окно (остается без изменений) */
-.profile-modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(4px);
-    justify-content: center;
-    align-items: center;
-    z-index: 2000;
-}
-
-.profile-modal-overlay.open {
-    display: flex;
-}
-
-.profile-modal-content {
-    background: #16161a;
-    border: 1px solid #f6b36a;
-    border-radius: 8px;
-    padding: 20px;
-    width: 300px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-}
-
-.profile-modal-content h3 {
-    margin: 0 0 15px 0;
-    color: #ffffff;
-    font-family: 'Oswald', sans-serif;
-    font-size: 16px;
-    letter-spacing: 1px;
-}
-
-.profile-modal-content input {
-    width: 100%;
-    height: 36px;
-    background: #111113;
-    border: 1px solid #333;
-    border-radius: 4px;
-    color: #fff;
-    padding: 0 10px;
-    box-sizing: border-box;
-    margin-bottom: 15px;
-}
-
-.profile-modal-content input:focus {
-    outline: none;
-    border-color: #f6b36a;
-}
-
-.modal-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-}
-
-.modal-actions button {
-    height: 32px;
-    padding: 0 15px;
-    border-radius: 4px;
-    border: none;
-    cursor: pointer;
-    font-family: 'Segoe UI', Arial, sans-serif;
-    font-size: 12px;
-    font-weight: bold;
-}
-
-#modal-cancel { background: #333; color: #fff; }
-#modal-confirm { background: #f6b36a; color: #000; }
-
-/* ДОБАВЛЕНО: Стилизация инпута, который заменяет имя слота при редактировании */
+/* Внутреннее текстовое поле редактирования */
 .profile-item-input {
     flex: 1;
     height: 24px;
@@ -487,7 +415,7 @@ footer p {
     box-shadow: 0 0 4px rgba(246, 179, 106, 0.4);
 }
 
-/* ДОБАВЛЕНО: Интерактивная RPG-кнопка ОК внутри строки слота */
+/* RPG-кнопка подтверждения ОК внутри строки */
 .profile-item-save-btn {
     background: #f6b36a;
     color: #000000;
@@ -496,8 +424,8 @@ footer p {
     height: 24px;
     padding: 0 10px;
     font-family: 'Oswald', sans-serif;
-    font-size: 11px;
     font-weight: bold;
+    font-size: 11px;
     cursor: pointer;
     letter-spacing: 0.5px;
     transition: background 0.2s ease;
@@ -508,7 +436,7 @@ footer p {
     background: #ffffff;
 }
 
-/* ДОБАВЛЕНО: Кнопка отмены редактирования внутри строки слота */
+/* Кнопка крестика отмены редактирования */
 .profile-item-cancel-btn {
     background: rgba(255, 255, 255, 0.05);
     color: #888;

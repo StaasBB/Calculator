@@ -112,8 +112,8 @@ export class ProfileManager {
 
                 const topPos = rect.bottom + window.pageYOffset;
                 
-                // Формула точного попиксельного центрирования
-                let leftPos = rect.left + (rect.width / 2);
+                const buttonCenter = rect.left + (rect.width / 2);
+                let leftPos = buttonCenter - (dropdownWidth / 2);
 
                 if (leftPos < 10) leftPos = 10;
                 if (leftPos + dropdownWidth > window.innerWidth - 10) {

@@ -36,13 +36,21 @@ export class BuildExporter {
     }
 
     /**
-     * Обновляет URL в строке браузера без перезагрузки страницы
+     * ИСПРАВЛЕНО: Безопасное обновление URL без перезагрузки страницы и поломки CSS путей
      */
     static updateUrl(allTrees) {
         const hash = this.generateGlobalHash(allTrees);
-        const newUrl = `${window.location.protocol}//${window.location.host}${window.location.pathname}?build=${hash}`;
-        window.history.replaceState({ path: newUrl }, '', newUrl);
+        
+        // Создаем чистый объект URL на основе текущего адреса в браузере
+        const currentUrl = new URL(window.location.href);
+        
+        // Меняем/добавляем только параметр ?build=...
+        currentUrl.searchParams.set('build', hash);
+        
+        // Обновляем адресную строку безопасным методом, который не трогает относительные пути стилей
+        window.history.replaceState({ path: currentUrl.toString() }, '', currentUrl.toString());
     }
+
 
     /**
      * Достает хэш из адресной строки при открытии сайта
