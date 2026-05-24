@@ -74,6 +74,24 @@ export class ProfileManager {
                 this.onStateChange();
             });
         }
+
+        // ИСПРАВЛЕНО ДЛЯ МОБИЛЬНЫХ: Закрытие меню при тапе в любое место мимо кнопок и списка
+        window.addEventListener('touchend', (e) => {
+            // Если выпадающее меню сейчас закрыто — ничего не делаем
+            if (!this.dropdown || !this.dropdown.classList.contains('open')) return;
+
+            // Проверяем, пришелся ли тап по кнопкам "Сохранить", "Загрузить" или по самому меню
+            const clickedOnLoad = this.btnLoad && this.btnLoad.contains(e.target);
+            const clickedOnSave = this.btnSave && this.btnSave.contains(e.target);
+            const clickedInsideDropdown = this.dropdown.contains(e.target);
+
+            // Если пользователь тапнул МИМО всех этих элементов — мягко закрываем меню
+            if (!clickedOnLoad && !clickedOnSave && !clickedInsideDropdown) {
+                this.closeDropdown();
+                this.onStateChange();
+            }
+        }, { passive: true });
+
     }
 
     /**
@@ -126,10 +144,14 @@ export class ProfileManager {
         }
     }
 
+    /**
+     * ИСПРАВЛЕНО: Условие среза массива больше не удаляет свежесозданный пустой слот!
+     */
     getSlotsList() {
         const slots = [];
         let maxFoundIndex = 3; 
-        
+
+        // 1. Ищем все существующие слоты в LocalStorage
         for (let i = 1; i < 100; i++) {
             if (localStorage.getItem(`rfab_profile_slot_${i}`)) {
                 if (i > maxFoundIndex) {
@@ -138,29 +160,44 @@ export class ProfileManager {
             }
         }
 
+        // 2. Наполняем массив текущими данными
         for (let i = 1; i <= maxFoundIndex; i++) {
             const rawData = localStorage.getItem(`rfab_profile_slot_${i}`);
-            slots.push({
-                id: i,
-                data: rawData ? JSON.parse(rawData) : null
-            });
+            let parsedData = null;
+            if (rawData) {
+                try {
+                    parsedData = JSON.parse(rawData);
+                } catch(e) {
+                    console.error(`Поврежденный слот ${i}`, e);
+                }
+            }
+            slots.push({ id: i, data: parsedData });
         }
 
+        // 3. Если все текущие слоты заняты — ВСЕГДА создаем один следующий пустой слот в конце
         const hasAnyEmptySlot = slots.some(s => s.data === null);
         if (!hasAnyEmptySlot) {
             const nextFreeId = slots.length + 1;
             slots.push({ id: nextFreeId, data: null });
         }
 
+        // 4. ИСПРАВЛЕНО: Обрезаем массив до базовых 3 слотов, только если в системе 
+        // нет реальных заполненных данных дальше 3-го слота (игнорируя финальный пустой слот)
         if (slots.length > 3) {
-            const hasDataInExtendedSlots = slots.slice(3).some(s => s.data !== null);
-            if (!hasDataInExtendedSlots) {
+            // Проверяем слоты с 4-го до предпоследнего. Самый последний пустой слот в проверку не берем
+            const hasDataInExtendedSlots = slots.slice(3, -1).some(s => s.data !== null);
+            
+            // Если реальных данных в скрытых слотах нет, а длина массива равна 4 (базовые 3 + 1 пустой) —
+            // мы сохраняем этот пустой слот для вывода на экран, иначе сработает срез!
+            if (!hasDataInExtendedSlots && slots[3].data !== null) {
                 return slots.slice(0, 3);
             }
         }
 
         return slots;
     }
+
+
 
     renderDropdown() {
         this.dropdown.innerHTML = '';
@@ -228,10 +265,8 @@ export class ProfileManager {
                     delSpan.innerHTML = '&times;';
                     delSpan.addEventListener('click', (e) => {
                         e.stopPropagation();
-                        if (confirm(`Удалить сохранение из Слота ${slot.id}?`)) {
-                            localStorage.removeItem(`rfab_profile_slot_${slot.id}`);
-                            this.renderDropdown();
-                        }
+                        localStorage.removeItem(`rfab_profile_slot_${slot.id}`);
+                        this.renderDropdown();
                     });
                     item.appendChild(delSpan);
                 }
@@ -257,14 +292,12 @@ export class ProfileManager {
     executeSave(slotId, nameInput) {
         const name = nameInput || `Билд ${slotId}`;
         
-        const buildData = this.state.allTrees.map(tree => ({
-            id: tree.treeId,
-            activeNodes: tree.nodes.filter(n => n.isActive).map(n => n.id)
-        }));
+        // Генерируем короткий бинарный хэш без дефисов
+        const compressedBuildHash = BuildExporter.generateGlobalHash(this.state.allTrees);
 
         const saveData = {
             name: name,
-            build: buildData
+            build: compressedBuildHash
         };
 
         localStorage.setItem(`rfab_profile_slot_${slotId}`, JSON.stringify(saveData));
@@ -273,19 +306,19 @@ export class ProfileManager {
         this.onStateChange();
     }
 
-    executeLoad(buildData) {
-        buildData.forEach(savedTree => {
-            const tree = this.state.allTrees.find(t => t.treeId === savedTree.id);
-            if (tree) {
-                tree.nodes.forEach(node => {
-                    node.isActive = savedTree.activeNodes.includes(node.id);
-                });
-            }
-        });
+    executeLoad(buildHash) {
+        // Прямое применение нового битового хэша без проверок на старые массивы
+        if (typeof buildHash === 'string') {
+            BuildExporter.applyGlobalHash(this.state.allTrees, buildHash);
+        }
 
+        // Валидация зависимостей перков после загрузки нового состояния
         this.state.allTrees.forEach(t => DependencyChecker.validate(t));
-        BuildSaver.saveToLocalStorage(this.state.allTrees);
-        BuildExporter.updateUrl(this.state.allTrees);
+        
+        // Обновление глобального автосейва в LocalStorage
+        if (typeof BuildSaver !== 'undefined' && BuildSaver.saveToLocalStorage) {
+            BuildSaver.saveToLocalStorage(this.state.allTrees);
+        }
         
         this.closeDropdown();
         this.onStateChange();

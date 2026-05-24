@@ -10,7 +10,37 @@ export class TooltipSystem {
         tooltip.id = 'calculator-tooltip';
         document.body.appendChild(tooltip);
         this.el = tooltip;
+
+        // ПЕРЕХВАТ КОЛЕСИКА (Для ПК): скроллим JS-скриптом сквозь pointer-events: none
+        window.addEventListener('wheel', (e) => {
+            if (!this.el || this.el.style.display === 'none' || !this.el.classList.contains('visible')) return;
+            const rect = this.el.getBoundingClientRect();
+            const isMouseOverTooltip = (
+                e.clientX >= rect.left &&
+                e.clientX <= rect.right &&
+                e.clientY >= rect.top &&
+                e.clientY <= rect.bottom
+            );
+
+            if (isMouseOverTooltip) {
+                if (this.el.scrollHeight > this.el.offsetHeight) {
+                    this.el.scrollTop += e.deltaY;
+                    e.preventDefault();
+                }
+            }
+        }, { passive: false });
+
+        // ДОБАВЛЕНО ДЛЯ ТЕЛЕФОНОВ: Тап по самому тултипу мгновенно скрывает его,
+        // освобождая экран для дальнейшей работы с калькулятором
+        tooltip.addEventListener('touchend', (e) => {
+            this.hide();
+            // Останавливаем всплытие, чтобы тап по тултипу случайно не кликнул под него в канвас
+            e.stopPropagation(); 
+        });
     }
+
+
+
 
     show(x, y, text, subtextArray, borderColor) {
         if (!this.el) this.initDOM();
@@ -19,7 +49,7 @@ export class TooltipSystem {
         this.el.style.border = `1.5px solid ${currentBorderColor}`;
         this.el.style.boxShadow = `0 8px 24px rgba(0, 0, 0, 0.7), 0 0 8px ${currentBorderColor}`;
 
-        let html = `<div style="font-weight: bold; font-size: 24px; color: #f5f5f7; margin-bottom: 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.06); padding-bottom: 6px;">${text}</div>`;
+        let html = `<div style="font-weight: bold; font-size: 20px; color: #f5f5f7; margin-bottom: 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.06); padding-bottom: 6px;">${text}</div>`;
         
         const lines = Array.isArray(subtextArray) ? subtextArray : (subtextArray ? subtextArray.split('\n') : []);
         
@@ -29,21 +59,23 @@ export class TooltipSystem {
 
             if (trimmed.startsWith("•")) {
                 html += `
-                    <div style="font-size: 18px; line-height: 18px; color: #e0e0e6; display: flex; gap: 8px; margin-bottom: 3px;">
+                    <div style="font-size: 14px; line-height: 18px; color: #e0e0e6; display: flex; gap: 8px; margin-bottom: 3px;">
                         <span style="color: ${currentBorderColor}; font-weight: bold;">•</span>
                         <span>${trimmed.substring(1).trim()}</span>
                     </div>`;
             } else if (line.startsWith("  ") || line.startsWith("\t")) {
-                html += `<div style="font-size: 18px; line-height: 18px; color: rgba(255, 255, 255, 0.45); padding-left: 16px; margin-bottom: 3px;">${trimmed}</div>`;
+                html += `<div style="font-size: 14px; line-height: 18px; color: rgba(255, 255, 255, 0.45); padding-left: 16px; margin-bottom: 3px;">${trimmed}</div>`;
             } else {
-                html += `<div style="font-size: 18px; line-height: 18px; color: #cccccc; margin-bottom: 3px;">${trimmed}</div>`;
+                html += `<div style="font-size: 14px; line-height: 18px; color: #cccccc; margin-bottom: 3px;">${trimmed}</div>`;
             }
         });
 
         this.el.innerHTML = html;
         this.el.style.display = 'block';
         
-        // Триггерим плавное появление через CSS класс .visible
+        // Сбрасываем ползунок скролла тултипа в самый верх при открытии нового перка
+        this.el.scrollTop = 0;
+
         setTimeout(() => {
             if (this.el) this.el.classList.add('visible');
         }, 10);
@@ -66,7 +98,15 @@ export class TooltipSystem {
 
         if (left < paddingOffset) left = paddingOffset;
         if (left + tooltipWidth > window.innerWidth - paddingOffset) left = window.innerWidth - tooltipWidth - paddingOffset;
-        if (top < paddingOffset) top = clientY + 20; // Если слишком высоко, переносим под мышь
+        
+        if (top < paddingOffset) {
+            const spaceBelow = window.innerHeight - clientY - paddingOffset;
+            if (spaceBelow > tooltipHeight + 20) {
+                top = clientY + 20;
+            } else {
+                top = paddingOffset;
+            }
+        }
 
         this.el.style.left = `${left}px`;
         this.el.style.top = `${top}px`;

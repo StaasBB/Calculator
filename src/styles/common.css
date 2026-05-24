@@ -2,7 +2,7 @@
 /* ==========================================================================
    1. ПЕРЕМЕННЫЕ ЦВЕТОВ И ИНИЦИАЛИЗАЦИЯ ЭКРАНА
    ========================================================================== */
-:root {
+/*:root {
     --red: #ea9999;
     --light-red: #f4cccc;
     --green: #b6d7a8;
@@ -13,7 +13,35 @@
     --light-yellow: #fff2cc;
     --purple: #b4a7d6;
     --light-purple: #d9d2e9;
+}*/
+
+:root {
+    /* Красный: глубокий и сочный розово-красный */
+    --red: #c0392b;
+    --light-red: #ffb3ba;
+
+    /* Зеленый: изумрудный и яркий салатовый */
+    --green: #27ae60;
+    --light-green: #baffc9;
+
+    /* Синий: сапфировый и насыщенный небесный */
+    --blue: #2980b9;
+    --light-blue: #bae1ff;
+
+    /* Желтый: горчичный и чистый банановый */
+    --yellow: #d4ac0d;
+    --light-yellow: #ffffba;
+
+    /* Фиолетовый: черничный и сочная карамельная лаванда */
+    --purple: #7d3c98;
+    --light-purple: #e1bfff;
 }
+
+
+
+
+
+
 
 html, body {
     height: 100%;
@@ -22,7 +50,7 @@ html, body {
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0px;
-    overflow: hidden; /* Отключаем скролл самого окна браузера для монолитности */
+    overflow-y: auto; /* ИСПРАВЛЕНО: Разрешаем вертикальный скролл страницы */
     background-image: url("../assets/background.jpg");
     background-size: cover;
     background-repeat: no-repeat;
@@ -30,7 +58,11 @@ body {
     background-attachment: fixed;
     display: flex;
     flex-direction: column;
+    align-items: stretch; /* ИСПРАВЛЕНО: Заставляет все дочерние блоки (включая футер) принудительно растянуться до краев */
+    
+    min-height: 100%; /* ИСПРАВЛЕНО: Чтобы фон не обрезался */
 }
+
 
 main {
     flex: 1;
@@ -150,51 +182,72 @@ header::before {
     filter: brightness(0.6);
 }
 
-/* ==========================================================================
-   3. ОФИЦИАЛЬНАЯ ПАНЕЛЬ UTILITIES BAR (ВТОРОЙ ХЕДЕР)
-   ========================================================================== */
+/* =========================================================================
+ 3. ОФИЦИАЛЬНАЯ ПАНЕЛЬ UTILITIES BAR (ВТОРОЙ ХЕДЕР) - ПОДОГНАНА ПОД ОФ. САЙТ
+========================================================================= */
+
 .tab-bar.app-utilities-bar {
-    background-color: transparent;
+    background-color: rgba(0, 0, 0, 0.8); /* Взято с оф. сайта */
     display: flex;
     justify-content: center;
-    padding: 0px;
-    gap: 0px;
-    position: fixed;
-    top: 60px;
-    z-index: 99;
-    width: 100%;
-    height: 45px;
-    box-sizing: border-box;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    /*padding: 0 6px;                           Взято с оф. сайта */
+    gap: 6px;                              /* Взято с оф. сайта */
+    position: sticky;                      /* Изменено fixed -> sticky */
+    top: 60px;                             /* Взято с оф. сайта */
+    z-index: 100;                          /* Подняли z-index до 100 */
+    /* ИСПРАВЛЕНО: Элемент теперь занимает ровно всю ширину экрана без вылетов */
+    width: 100%; 
+    box-sizing: border-box; 
+
+    /* Встроенный горизонтальный скролл кнопок для мобилок */
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-behavior: smooth;
+
+    /* Скрытие стандартного скроллбара */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
 
-.tab-bar.app-utilities-bar::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background-color: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    z-index: -2;
+/* Скрытие скроллбара панели в Webkit-браузерах (Chrome/Safari) */
+.tab-bar.app-utilities-bar::-webkit-scrollbar {
+    display: none;
 }
 
+@media (hover: none) and (pointer: coarse)  {
+    /* Полностью удаляем первый хедер из разметки на мобилках */
+    header {
+        display: none !important;
+    }
+
+    /* Поднимаем панель с кнопками на самый верх экрана */
+    .tab-bar.app-utilities-bar {
+        justify-content: flex-start;
+        top: 0px; /* Прижимается к верхнему краю телефона */
+        position: fixed; /* Меняем на fixed, чтобы кнопки оставались на месте при скролле */
+    }
+
+    #canvas-container {
+        margin-top: 52px !important; /* Ровно под высоту утилитарной панели */
+        height: calc(100vh - 57px);  /* Занимает всё оставшееся пространство экрана */
+    }
+}
+
+
+/* Стилизация кнопок утилит */
 .tab-bar.app-utilities-bar .tab-button {
-    font-family: 'Oswald', sans-serif;
-    text-transform: uppercase;
-    letter-spacing: 1px;
     position: relative;
-    padding: 0px 24px;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    font-size: 14px;
+    padding: 16px 18px;                    /* Взято с оф. сайта */
+    font-size: 16px;                       /* Взято с оф. сайта */
     color: #ddd;
     background: transparent;
     border: none;
+    border-bottom: 2px solid transparent;  /* Появилась нижняя граница под активные табы */
     cursor: pointer;
-    box-sizing: border-box;
+    white-space: nowrap;                   /* КРИТИЧНО: кнопки не будут переноситься на новую строку при скролле */
 }
 
+/* Эффект наведения (золотой градиент) */
 .tab-bar.app-utilities-bar .tab-button::after {
     content: "";
     position: absolute;
@@ -213,7 +266,7 @@ header::before {
     outline: none;
 }
 
-/* Опасная кнопка "Сбросить всё" */
+/* Сохраняем вашу оригинальную стилизацию опасной кнопки "Сбросить всё" */
 .tab-bar.app-utilities-bar .tab-button.btn-danger {
     color: var(--light-red);
     transition: all 0.3s ease;
@@ -227,31 +280,51 @@ header::before {
     color: #ffffff !important;
 }
 
+
 /* ==========================================================================
    4. КОНТЕЙНЕР ХОЛСТА И ДИНАМИЧЕСКИЙ ТУЛТИП ОПИСАНИЙ
    ========================================================================== */
 #canvas-container {
-    width: 100vw;
-    height: calc(100vh - 165px); /* Автоматический проем под ваше разрешение */
-    margin-top: 105px;
-    margin-bottom: 60px;
+    width: 100% !important;
+    max-width: 100vw !important;
+    height: auto;
+    margin-top: 60px;
+    margin-bottom: 40px;
     display: flex;
-    justify-content: flex-start;
+    
+    /* НА ПК: калькулятор стоит строго по центру игрового окна */
+    justify-content: center; 
     align-items: flex-start;
-    overflow: auto;
+    
+    /* Если вдруг на ПК экран станет слишком узким, разрешаем локальный скролл */
+    overflow-x: auto !important; 
+    overflow-y: visible;
 }
 
-canvas {
+/* На ПК сбрасываем автоматические маргины у канваса, доверяя выравнивание флексбоксу */
+#gameCanvas {
     display: block;
-    touch-action: none;
+    margin: 0 !important; 
+    touch-action: auto !important;
     background-color: transparent;
     image-rendering: pixelated;
     image-rendering: crisp-edges;
 }
+canvas {
+    display: block;
+    touch-action: auto !important; /* ИСПРАВЛЕНО: Разрешаем нативный скролл поверх канваса */
+    background-color: transparent;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    /* Отключает появление паразитной подсветки элементов при тапе на iOS */
+    -webkit-tap-highlight-color: transparent; 
+    /* ДОБАВЛЕНО: Гарантирует правильную точку старта скролла на мобильных при центрировании родителя */
+    margin: 0 auto; 
+}
 
 #calculator-tooltip {
     position: fixed;
-    pointer-events: none;
+    pointer-events: none !important;
     display: none;
     z-index: 9999;
     width: max-content;
@@ -266,6 +339,8 @@ canvas {
     opacity: 0;
     transform: translateY(5px);
     transition: opacity 0.12s ease-out, transform 0.12s ease-out;
+    max-height: calc(100vh - 40px); /* Высота экрана минус paddingOffset с двух сторон */
+    overflow-y: auto; /* Если текст совсем гигантский, внутри тултипа появится аккуратный скролл */
 }
 
 #calculator-tooltip.visible {
@@ -273,63 +348,94 @@ canvas {
     transform: translateY(0);
 }
 
-/* ==========================================================================
-   5. ОРИГИНАЛЬНЫЙ ФУТЕР И ЕГО ИКОНКИ
-   ========================================================================== */
+/* =========================================================================
+ 5. ОФИЦИАЛЬНЫЙ ФУТЕР RFAB - ПОЛНЫЙ СТИЛЬ (Высота 84px: 44px + 20px падинги)
+========================================================================= */
+
 footer {
     background-color: rgba(0, 0, 0, 0.8);
-    width: 100%;
-    height: 60px;
+    width: 100% !important;
+    max-width: 100vw !important; /* Намертво запирает элемент в границах экрана */
+    
+    /* ИСПРАВЛЕНО: Задаем итоговую высоту 84px напрямую */
+    height: 84px !important; 
+    
     display: flex;
-    position: fixed;
-    bottom: 0;
-    left: 0;
+    position: relative;
+    margin-top: auto; 
     justify-content: center;
-    align-items: center;
-    padding-top: 10px;
-    padding-bottom: 10px;
-    box-sizing: border-box;
+    align-items: center; 
+    
+    /* Оставляем падинги, теперь они вжимаются внутрь */
+    padding: 20px 20px; 
+    
+    /* ИСПРАВЛЕНО: Меняем на border-box, чтобы падинги не раздували ширину футера наружу */
+    box-sizing: border-box !important; 
     z-index: 100;
 }
 
+/* СТИЛИЗАЦИЯ ДВУХСТРОЧНОГО ТЕКСТА (2 строки по 22px) */
 .footer-text {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-rows: 22px 22px; /* Ровно две строки по 22px */
+    align-items: center;
+    justify-content: center;
+    text-align: center;
     font-family: 'Oswald', sans-serif;
     font-weight: 400;
-    text-align: center;
-}
-
-@media (hover: none) and (pointer: coarse) {
-    footer {
-        width: calc(100% - 20px);
-        padding-left: 10px;
-        padding-right: 10px;
-    }
-    .footer-text {
-        display: none;
-    }
-}
-
-footer .header-social-platforms .header-img {
-    height: 20px !important; /* Уменьшаем иконки в подвале, чтобы не были огромными */
-    width: auto;
-    margin-bottom: 10px;
-}
-
-footer p a {
-    color: white;
-    text-decoration: underline;
+    margin-left: 40px;  /* Отступы по бокам, чтобы текст красиво */
+    margin-right: 40px; /* отделялся от логотипа и соцсетей */
 }
 
 footer p {
     color: white;
     font-size: 14px;
-    margin-top: 2px;
-    margin-bottom: 2px;
-    padding: 0px;
+    line-height: 22px; /* Высота строки 22px */
+    height: 22px;      /* Ограничение высоты параграфа */
+    margin: 0 !important; /* Убираем дефолтные отступы браузера */
+    padding: 0;
     background-color: transparent;
+    white-space: nowrap; /* Запрещаем случайный перенос слов внутри строки */
 }
+
+/* Настройка ссылок: подчеркивание есть изначально */
+footer p a {
+    color: white;
+    text-decoration: underline; /* ИСПРАВЛЕНО: теперь подчеркнуто по умолчанию */
+}
+
+/* При наведении: подчеркивание пропадает */
+footer p a:hover {
+    text-decoration: none; /* ИСПРАВЛЕНО: убираем линию при наведении */
+}
+
+/* РАЗМЕР ОРИГИНАЛЬНОГО ЛОГОТИПА (30px) */
+footer .header-img-a {
+    display: inline-flex;
+    align-items: center;
+    height: 100%;
+}
+
+footer .header-img-a .header-img {
+    height: 30px !important; /* Высота логотипа строго 30px */
+    width: auto;
+    margin: 0;
+}
+
+/* РАЗМЕР ИКОНОК СОЦСЕТЕЙ (20px) */
+footer .header-social-platforms {
+    display: flex;
+    align-items: center;
+    gap: 12px; /* Расстояние между иконками */
+    height: 100%;
+}
+
+footer .header-social-platforms .header-img {
+    height: 20px !important; /* Высота иконок строго 20px */
+    width: auto;
+    margin: 0;
+}
+
 
 /* ==========================================================================
    6. ИНТЕРФЕЙС ВЫПАДАЮЩИХ ПРОФИЛЕЙ СОХРАНЕНИЙ
@@ -469,4 +575,56 @@ footer p {
     width: 320px; 
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
     z-index: 200; 
+}
+
+@media (hover: none) and (pointer: coarse) {
+    
+        #calculator-tooltip {
+        /* Палец сможет зацепить тултип и прокрутить текст внутри него */
+        pointer-events: auto !important; 
+        /* Делаем тултип чуть пошире на экранах телефонов для удобства чтения */
+        width: calc(100% - 40px) !important;
+        max-width: calc(100vw - 40px) !important
+    }
+    
+    /* ИСПРАВЛЕНО: Полностью убираем ограничение по высоте 100vh */
+    #canvas-container {
+        justify-content: flex-start !important; 
+        align-items: flex-start !important;
+        margin-top: 52px !important; /* Отступ под фиксированную панель кнопок */
+        
+        width: 100% !important;
+        max-width: 100vw !important;
+        
+        /* ИСПРАВЛЕНО: Контейнер теперь растягивается на полную физическую высоту сайдбара и канваса (800px) */
+        height: auto !important; 
+        min-height: 800px !important; 
+        
+        overflow-x: auto !important; /* Горизонтальный скролл канваса внутри своей коробки */
+        overflow-y: visible !important; /* Разрешаем вертикальный рост контента */
+    }
+
+    /* На мобильных канвас намертво крепится к левому верхнему углу */
+    #gameCanvas {
+        margin: 0 !important; 
+    }
+
+    /* Исправление обрезанного футера */
+    footer {
+        width: 100% !important;
+        max-width: 100vw !important;
+        padding-left: 20px !important;
+        padding-right: 20px !important;
+        height: 84px !important;
+        box-sizing: border-box !important; 
+        
+        /* ИСПРАВЛЕНО: Гарантируем, что футер идет в обычном потоке строго ПОД контейнером */
+        position: relative !important; 
+        margin-top: 40px !important; /* Красивый отступ между концом калькулятора и футером */
+        justify-content: space-between !important; 
+    }
+    
+    .footer-text {
+        display: none !important; 
+    }
 }
