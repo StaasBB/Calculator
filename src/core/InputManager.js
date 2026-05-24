@@ -103,8 +103,11 @@ export class InputManager {
 
         // НА ТЕЛЕФОНЕ: Логика, завязанная ИСКЛЮЧИТЕЛЬНО на отрыв пальца
         this.canvas.addEventListener('touchend', (e) => {
-            // Полностью блокируем 'ghost click' браузера, убирая двойные срабатывания
-            e.preventDefault(); 
+            // ИСПРАВЛЕНО: Блокируем 'ghost click' только если событие является отменяемым.
+            // Если в этот момент идет скролл контента, e.preventDefault() вызываться не будет, и спам прекратится.
+            if (e.cancelable) {
+                e.preventDefault(); 
+            }
 
             if (e.changedTouches && e.changedTouches.length > 0) {
                 const touch = e.changedTouches[0];
@@ -113,7 +116,7 @@ export class InputManager {
                 const fakeEvent = {
                     clientX: touch.clientX,
                     clientY: touch.clientY,
-                    isTouch: true // Флаг, чтобы скрипт понял, что нужно вывести тултип на мобильном
+                    isTouch: true // Флаг для вывода тултипа на мобильном
                 };
                 
                 handleSelect(fakeEvent);
