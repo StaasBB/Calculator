@@ -139,7 +139,7 @@ header::before {
 .header-link {
     font-family: 'Oswald', sans-serif;
     font-weight: 400; /* Буквы тонкие и аккуратные, как в оригинале */
-    font-size: 14px;
+    font-size: 16px;
     position: relative;
     color: white;
     padding: 18px 24px;
@@ -155,8 +155,8 @@ header::before {
     flex-direction: column;
     justify-content: center;
     text-align: center;
-    line-height: 15px;
-    font-size: 12.5px;
+    line-height: 20px;
+    font-size: 16px;
 }
 
 /* Плавный золотой градиент наведения */
@@ -426,7 +426,7 @@ footer .header-img-a .header-img {
 footer .header-social-platforms {
     display: flex;
     align-items: center;
-    gap: 12px; /* Расстояние между иконками */
+    gap: 20px; /* Расстояние между иконками */
     height: 100%;
 }
 
