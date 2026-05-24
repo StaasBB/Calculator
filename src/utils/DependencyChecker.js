@@ -11,46 +11,57 @@ export class DependencyChecker {
     }
 
     /**
-     * Рекурсивно активирует перк и всех его необходимых родителей (снизу вверх)
+     * ИСПРАВЛЕНО: Активирует ВСЕ ветки, если ни одна не вкачана.
+     * Если хоть одна уже активна — активирует только сам перк.
      */
     static activateChain(tree, node) {
-        node.isActive = true;
-        node.requires.forEach(reqId => {
-            const parent = tree.getNodeById(reqId);
-            if (parent && !parent.isActive) {
-                this.activateChain(tree, parent);
+        if (node.isActive) return;
+
+        if (node.requires && node.requires.length > 0) {
+            // Проверяем, есть ли среди родителей хотя бы один уже АКТИВНЫЙ перк
+            const hasAnyActiveParent = node.requires.some(reqId => {
+                const parent = tree.getNodeById(reqId);
+                return parent ? parent.isActive : false;
+            });
+
+            // Если НИ ОДИН из родителей не активирован — рекурсивно запускаем прокачку ВСЕХ веток (всех родителей)
+            if (!hasAnyActiveParent) {
+                node.requires.forEach(reqId => {
+                    const parent = tree.getNodeById(reqId);
+                    if (parent && !parent.isActive) {
+                        this.activateChain(tree, parent);
+                    }
+                });
             }
-        });
+            // Если хотя бы один родитель БЫЛ активен, мы пропускаем блок выше,
+            // ветка считается подведенной, и другие параллельные пути не трогаем!
+        }
+
+        // Включаем текущий перк
+        node.isActive = true;
     }
 
     /**
-     * ИСПРАВЛЕНО: Умная деактивация с учетом развилок и альтернативных путей (сверху вниз)
+     * Умная деактивация с учетом развилок и альтернативных путей (сверху вниз)
      */
     static deactivateChain(tree, startNode) {
-        // 1. Снимаем активность с текущего перка
         startNode.isActive = false;
 
-        // 2. Запускаем цикл валидации для всех перков дерева, пока система не придет в стабильное состояние.
-        // Это необходимо, так как отключение одного перка может по цепочке заблокировать целую подветку дальше.
         let stateChanged = true;
-        
         while (stateChanged) {
             stateChanged = false;
 
             tree.nodes.forEach(node => {
-                // Нас интересуют только те перки, которые сейчас вкачаны и у которых ЕСТЬ требования (не корни)
-                if (node.isActive && node.requires.length > 0) {
+                if (node.isActive && node.requires && node.requires.length > 0) {
                     
-                    // ИСПРАВЛЕНО: Проверяем, есть ли хоть ОДИН активный предок у этого перка
                     const hasAlternativePath = node.requires.some(reqId => {
                         const parent = tree.getNodeById(reqId);
                         return parent ? parent.isActive : false;
                     });
 
-                    // Если все пути к перку ведут через отключенные таланты — отключаем его
                     if (!hasAlternativePath) {
                         node.isActive = false;
-                        stateChanged = true; // Сигнализируем, что нужно проверить дерево еще раз для следующих потомков
+                        stateChanged = true; 
                     }
                 }
             });
@@ -58,14 +69,14 @@ export class DependencyChecker {
     }
 
     /**
-     * Проверяет валидность дерева (например, после загрузки хэша или сэйва профиля)
+     * Проверяет валидность дерева (например, после загрузки хэша)
      */
     static validate(tree) {
         let stateChanged = true;
         while (stateChanged) {
             stateChanged = false;
             tree.nodes.forEach(node => {
-                if (node.isActive && node.requires.length > 0) {
+                if (node.isActive && node.requires && node.requires.length > 0) {
                     const hasValidParent = node.requires.some(reqId => {
                         const parent = tree.getNodeById(reqId);
                         return parent ? parent.isActive : false;
