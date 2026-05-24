@@ -117,7 +117,7 @@ export class UIManager {
                     });
 
                     // Строка 1: Название ветки (смещаем на 5px выше центра)
-                    ctx.font = isSelected ? "bold 11px 'Segoe UI', Arial" : "11px 'Segoe UI', Arial";
+                    ctx.font = isSelected ? "bold 11px 'Segoe UI', Arial" : "12px 'Segoe UI', Arial";
                     ctx.textBaseline = "middle";
                     ctx.fillText(tree.title, x + buttonW / 2, buttonY + (buttonH / 2) - 6);
 
@@ -135,7 +135,7 @@ export class UIManager {
                     ctx.fillText(subText, x + buttonW / 2, buttonY + (buttonH / 2) + 7);
                 } else {
                     // ДЕФОЛТНЫЙ РЕЖИМ: Если перков нет — пишем в одну строку ровно по центру
-                    ctx.font = isSelected ? "bold 11px 'Segoe UI', Arial" : "11px 'Segoe UI', Arial";
+                    ctx.font = isSelected ? "bold 12px 'Segoe UI', Arial" : "12px 'Segoe UI', Arial";
                     ctx.textBaseline = "middle";
                     ctx.fillText(tree.title, x + buttonW / 2, buttonY + buttonH / 2);
                 }
