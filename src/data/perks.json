@@ -3445,7 +3445,7 @@
         },
         {
           "id": "vamp_lord_claws",
-          "name": "Когти зверя",
+          "name": "Когти вампира",
           "levelReq": 20,
           "requires": [
             "vamp_lord_beast_within",
