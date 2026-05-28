@@ -11,6 +11,9 @@ export class ProfileManager {
 
         // Таймер для контроля перевода курсора с кнопки на выпадающий список
         this.leaveTimeout = null;
+        
+        //вылет при редактировании
+        this.isEditingInputFocused = false;
 
         this.initDOMReferences();
         this.initEvents();
@@ -45,19 +48,34 @@ export class ProfileManager {
             this.clearLeaveTimeout();
         });
 
-        // 2. Когда мышь полностью ПОКИДАЕТ выпадающий список — мгновенно закрываем его
+        // 2. Когда мышь полностью ПОКИДАЕТ выпадающий список — мгновенно закрываем его кроме печатанья
         this.dropdown.addEventListener('mouseleave', () => {
+
+            if (this.isEditingInputFocused) {
+                return;
+            }
+
             this.closeDropdown();
             this.onStateChange();
         });
 
         // 3. Дополнительная защита: если мышь ушла с самих кнопок хедера и не дошла до списка
         const handleButtonLeave = () => {
+
+            if (this.isEditingInputFocused) {
+                return;
+            }
+
             // Сначала на всякий случай очищаем предыдущий таймер, чтобы они не множились
             this.clearLeaveTimeout();
             
             // Даем пользователю 500мс, чтобы донести мышь от кнопки до выпавшего списка
             this.leaveTimeout = setTimeout(() => {
+
+                if (this.isEditingInputFocused) {
+                    return;
+                }
+
                 this.closeDropdown();
                 this.onStateChange();
             }, 500);
@@ -223,11 +241,28 @@ export class ProfileManager {
             item.className = 'profile-item';
 
             if (this.currentMode === 'save' && this.editingSlotId === slot.id) {
+
+                this.isEditingInputFocused = true;
+
                 const input = document.createElement('input');
                 input.type = 'text';
                 input.className = 'profile-item-input';
                 input.maxLength = 20;
                 input.value = slot.data ? slot.data.name : `Билд ${slot.id}`;
+
+                input.addEventListener('focus', () => {
+                    this.isEditingInputFocused = true;
+                    this.clearLeaveTimeout;
+                });
+
+                input.addEventListener('blur', () => {
+                    setTimeout(() => {
+                        const active = document.activeElement;
+
+                        const stillInsideDropdown = this.dropdown.contains(active);
+                        this.isEditingInputFocused = stillInsideDropdown;
+                    }, 50);
+                });
                 
                 const saveBtn = document.createElement('button');
                 saveBtn.className = 'profile-item-save-btn';
@@ -257,6 +292,7 @@ export class ProfileManager {
 
                 cancelBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
+                    this.isEditingInputFocused = false;
                     this.editingSlotId = null;
                     this.renderDropdown();
                 });
@@ -288,6 +324,7 @@ export class ProfileManager {
                 
                 item.addEventListener('click', () => {
                     if (this.currentMode === 'save') {
+                        this.isEditingInputFocused = true;
                         this.editingSlotId = slot.id;
                         this.renderDropdown();
                         setTimeout(() => {
@@ -317,7 +354,10 @@ export class ProfileManager {
 
         localStorage.setItem(`rfab_profile_slot_${slotId}`, JSON.stringify(saveData));
         
-        this.closeDropdown(); 
+        this.isEditingInputFocused =  false;
+        this.editingSlotId = null;
+        
+        this.renderDropdown();
         this.onStateChange();
     }
 

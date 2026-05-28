@@ -16,30 +16,36 @@
 }*/
 
 :root {
-    /* Красный: глубокий и сочный розово-красный */
-    --red: #c0392b;
-    --light-red: #ffb3ba;
+    /* --- КРАСНЫЙ СПЕКТР (RED) --- */
+    --red-main: #9c2a2a;         /* Плотный рубиново-красный */
+    --red-bg: #1a0d0d;           /* Едва заметный красный оттенок подложки */
+    --red-border: #441a1a;       /* Темно-бордовый кованый бортик */
+    --red-glow: rgba(178, 59, 59, 0.22); /* Рассеянное бархатное свечение */
 
-    /* Зеленый: изумрудный и яркий салатовый */
-    --green: #27ae60;
-    --light-green: #baffc9;
+    /* --- ЗЕЛЕНЫЙ СПЕКТР (GREEN) --- */
+    --green-main: #20803d;       /* Глубокий изумрудно-хвойный */
+    --green-bg: #0c120e;         /* Темная лесная подложка */
+    --green-border: #183d25;     /* Малахитовый бортик */
+    --green-glow: rgba(46, 125, 70, 0.22);
 
-    /* Синий: сапфировый и насыщенный небесный */
-    --blue: #2980b9;
-    --light-blue: #bae1ff;
+    /* --- СИНИЙ СПЕКТР (BLUE) --- */
+    --blue-main: #3b6fb2;        /* Сапфирово-синий */
+    --blue-bg: #0d111a;          /* Глубокая ночная подложка */
+    --blue-border: #1a2f4c;      /* Темно-синяя граница */
+    --blue-glow: rgba(59, 111, 178, 0.25);
 
-    /* Желтый: горчичный и чистый банановый */
-    --yellow: #d4ac0d;
-    --light-yellow: #ffffba;
+    /* --- ЖЕЛТЫЙ СПЕКТР (YELLOW) --- */
+    --yellow-main: #b28f3b;      /* Приглушенный янтарно-желтый */
+    --yellow-bg: #1a150d;        /* Теплая смоляная подложка */
+    --yellow-border: #44371a;    /* Охристая граница */
+    --yellow-glow: rgba(178, 143, 59, 0.18);
 
-    /* Фиолетовый: черничный и сочная карамельная лаванда */
-    --purple: #7d3c98;
-    --light-purple: #e1bfff;
+    /* --- ФИОЛЕТОВЫЙ СПЕКТР (PURPLE) --- */
+    --purple-main: #6f3bb2;      /* Насыщенный аметистовый */
+    --purple-bg: #120d1a;        /* Темно-черничная подложка */
+    --purple-border: #2f1a4c;    /* Сумеречная граница */
+    --purple-glow: rgba(111, 59, 178, 0.25);
 }
-
-
-
-
 
 
 
@@ -99,8 +105,6 @@ header::before {
     position: absolute;
     inset: 0;
     background-color: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
     z-index: -2;
 }
 
@@ -183,7 +187,7 @@ header::before {
 }
 
 /* =========================================================================
- 3. ОФИЦИАЛЬНАЯ ПАНЕЛЬ UTILITIES BAR (ВТОРОЙ ХЕДЕР) - ПОДОГНАНА ПОД ОФ. САЙТ
+ 3. ОФИЦИАЛЬНАЯ ПАНЕЛЬ UTILITIES BAR - ПОДОГНАНА ПОД ОФ. САЙТ
 ========================================================================= */
 
 .tab-bar.app-utilities-bar {
@@ -266,16 +270,18 @@ header::before {
     outline: none;
 }
 
-/* Сохраняем вашу оригинальную стилизацию опасной кнопки "Сбросить всё" */
+/* Исходное статичное состояние кнопки — сочный красный цвет */
 .tab-bar.app-utilities-bar .tab-button.btn-danger {
-    color: var(--light-red);
+    color: #ef4747 !important; 
     transition: all 0.3s ease;
 }
 
+/* Градиент наведения на основе оригинального стиля хедера RFAB */
 .tab-bar.app-utilities-bar .tab-button.btn-danger::after {
-    background: linear-gradient(rgba(150, 40, 27, 0.4), transparent) !important;
+    background: linear-gradient(rgba(239, 71, 71, 0.45), transparent) !important;
 }
 
+/* При наведении мыши — кнопка плавно загорается чистым белым цветом */
 .tab-bar.app-utilities-bar .tab-button.btn-danger:hover {
     color: #ffffff !important;
 }
@@ -347,6 +353,137 @@ canvas {
     opacity: 1;
     transform: translateY(0);
 }
+
+
+/* ==========================================================================
+   ОБНОВЛЕННЫЙ ИНТЕРФЕЙС ЛЕВОГО МЕНЮ (АТМОСФЕРНЫЙ ДИЗАЙН)
+   ========================================================================== */
+
+/* Базовый контейнер или класс для кнопок меню (замените селектор на ваш, например .sidebar-btn или .btn-nav) */
+.sidebar-button-choice {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 14px 20px;
+    margin-bottom: 12px;
+    border-radius: 6px;
+    background: #131316; /* Глубокий темный фон неактивной карточки */
+    border: 1.5px solid rgba(255, 255, 255, 0.04);
+    color: rgba(255, 255, 255, 0.65);
+    font-size: 15px;
+    font-weight: 500;
+    text-decoration: none;
+    overflow: hidden;
+    z-index: 1;
+    transition: color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+}
+
+/* Эффект градиента сверху вниз (адаптировано из .header-link::after) */
+.sidebar-button-choice::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    /* По дефолту прозрачный градиент, цвет подменяется ниже через переменные */
+    background: linear-gradient(var(--tree-glow-color, rgba(255, 255, 255, 0.02)), transparent);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    z-index: -1;
+}
+
+/* Тонкий световой блик на верхней грани для материальности */
+.sidebar-button-choice::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 6px;
+    right: 6px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+/* --- СОСТОЯНИЕ HOVER (НАВЕДЕНИЕ МЫШИ ДЛЯ ПК) --- */
+.sidebar-button-choice:hover {
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.15);
+    background: #18181c;
+}
+
+.sidebar-button-choice:hover::after {
+    opacity: 0.5; /* Слегка проявляем цветной верхний градиент при наведении */
+}
+
+/* --- СОСТОЯНИЕ ACTIVE / SELECTED (ВЫБРАННАЯ ВЕТКА) --- */
+.sidebar-button-choice.active, 
+.sidebar-button-choice:active {
+    color: #ffffff;
+    font-weight: 700;
+    background: var(--tree-bg-color, #131316); /* Подложка с легким оттенком спектра */
+    border-color: var(--tree-main-color, #cda869); /* Граница горит цветом ветки */
+    
+    /* Мягкое рассеянное свечение наружу (Subtle Glow) */
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5), 
+                0 0 14px var(--tree-glow-color, rgba(205, 168, 105, 0.15));
+}
+
+.sidebar-button-choice.active::after {
+    opacity: 1; /* Полностью включаем градиент из хедера */
+}
+
+.sidebar-button-choice.active::before {
+    opacity: 1; /* Зажигаем верхний световой блик */
+}
+
+
+/* ==========================================================================
+   ДИНАМИЧЕСКИЙ МАППИНГ ЦВЕТОВ НА КАРТОЧКИ (ИЗ JSON themeColor)
+   Замените классы ниже (.red, .green) на те, которые ваш скрипт генерирует в HTML
+   ========================================================================== */
+
+/* Красная ветка (Red) */
+.sidebar-button-choice.red,
+.sidebar-button-choice[data-theme="red"] {
+    --tree-main-color: var(--red-main);
+    --tree-bg-color: var(--red-bg);
+    --tree-glow-color: var(--red-glow);
+}
+
+/* Зеленая ветка (Green) */
+.sidebar-button-choice.green,
+.sidebar-button-choice[data-theme="green"] {
+    --tree-main-color: var(--green-main);
+    --tree-bg-color: var(--green-bg);
+    --tree-glow-color: var(--green-glow);
+}
+
+/* Синяя ветка (Blue) */
+.sidebar-button-choice.blue,
+.sidebar-button-choice[data-theme="blue"] {
+    --tree-main-color: var(--blue-main);
+    --tree-bg-color: var(--blue-bg);
+    --tree-glow-color: var(--blue-glow);
+}
+
+/* Желтая ветка (Yellow) */
+.sidebar-button-choice.yellow,
+.sidebar-button-choice[data-theme="yellow"] {
+    --tree-main-color: var(--yellow-main);
+    --tree-bg-color: var(--yellow-bg);
+    --tree-glow-color: var(--yellow-glow);
+}
+
+/* Фиолетовая ветка (Purple) */
+.sidebar-button-choice.purple,
+.sidebar-button-choice[data-theme="purple"] {
+    --tree-main-color: var(--purple-main);
+    --tree-bg-color: var(--purple-bg);
+    --tree-glow-color: var(--purple-glow);
+}
+
 
 /* =========================================================================
  5. ОФИЦИАЛЬНЫЙ ФУТЕР RFAB - ПОЛНЫЙ СТИЛЬ (Высота 84px: 44px + 20px падинги)

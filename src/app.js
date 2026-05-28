@@ -1,6 +1,7 @@
 import { PerkTree } from './core/PerkTree.js';
 import { CanvasRender } from './rendering/CanvasRender.js';
-import { InputManager } from './core/InputManager.js';
+// Импортируем новый Контроллер
+import { InputController } from './core/InputController.js';
 import { DependencyChecker } from './utils/DependencyChecker.js';
 import { BuildExporter } from './storage/BuildExporter.js';
 import { BuildSaver } from './storage/BuildSaver.js';
@@ -45,8 +46,8 @@ async function init() {
         // Валидируем связи на случай битых или устаревших сохранений
         state.allTrees.forEach(tree => DependencyChecker.validate(tree));
 
-        // 4. Инициализируем менеджер ввода (клики по Canvas, ховеры, тултипы)
-        new InputManager(canvas, state, renderer, render);
+        // 4. ИСПРАВЛЕНО: Инициализируем новый контроллер ввода (InputController) вместо старого InputManager
+        new InputController(canvas, state, renderer, render);
 
         // 5. Инициализируем менеджер профилей (кнопки ЗАГРУЗИТЬ / СОХРАНИТЬ в Сайдбаре)
         new ProfileManager(state, render);
