@@ -144,17 +144,50 @@ export class TooltipView {
             if (!trimmed) return;
 
             if (trimmed.startsWith("•")) {
+                // ИСПРАВЛЕНО НАМЕРТВО: display: flex и жесткий gap делают так, 
+                // что точка стоит слева, а текст начинается СТРОГО с одной вертикальной линии
                 html += `
-                    <div style="font-size: 14px; line-height: 18px; color: #e0e0e6; display: flex; gap: 8px; margin-bottom: 3px;">
-                        <span style="color: ${currentBorderColor}; font-weight: bold;">•</span>
-                        <span>${trimmed.substring(1).trim()}</span>
+                    <div style="
+                        font-size: 14px; 
+                        line-height: 18px; 
+                        color: #e0e0e6; 
+                        display: flex; 
+                        align-items: flex-start;
+                        gap: 10px; 
+                        margin-bottom: 5px;
+                        padding-left: 4px;
+                    ">
+                        <span style="color: ${currentBorderColor}; font-weight: bold; flex-shrink: 0; width: 8px; text-align: center;">•</span>
+                        <span style="flex-grow: 1;">${trimmed.substring(1).trim()}</span>
                     </div>`;
             } else if (line.startsWith("  ") || line.startsWith("\t")) {
-                html += `<div style="font-size: 14px; line-height: 18px; color: rgba(255, 255, 255, 0.45); padding-left: 16px; margin-bottom: 3px;">${trimmed}</div>`;
+                // ИСПРАВЛЕНО НАМЕРТВО: Подгоняем внутренний отступ (padding-left: 22px),
+                // чтобы обычный текст без точек начинался СТРОГО по той же вертикальной линии, что и верхний текст
+                html += `
+                    <div style="
+                        font-size: 14px; 
+                        line-height: 18px; 
+                        color: rgba(255, 255, 255, 0.45); 
+                        padding-left: 22px; 
+                        margin-bottom: 5px;
+                    ">
+                        ${trimmed}
+                    </div>`;
             } else {
-                html += `<div style="font-size: 14px; line-height: 18px; color: #cccccc; margin-bottom: 3px;">${trimmed}</div>`;
+                // Обычный дефолтный текст без каких-либо отступов (также выравниваем по общей оси)
+                html += `
+                    <div style="
+                        font-size: 14px; 
+                        line-height: 18px; 
+                        color: #cccccc; 
+                        padding-left: 22px; 
+                        margin-bottom: 5px;
+                    ">
+                        ${trimmed}
+                    </div>`;
             }
         });
+
 
         this.el.innerHTML = html;
         this.el.style.display = 'block';
