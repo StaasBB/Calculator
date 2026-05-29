@@ -50,7 +50,9 @@
 
 
 html, body {
+    width: 100%;
     height: 100%;
+    overflow: hidden; 
 }
 
 body {
@@ -294,7 +296,7 @@ header::before {
     display: flex;
     
     /* НА ПК: калькулятор стоит строго по центру игрового окна */
-    justify-content: center; 
+    justify-content: safe center; 
     align-items: flex-start;
     
     /* Если вдруг на ПК экран станет слишком узким, разрешаем локальный скролл */
