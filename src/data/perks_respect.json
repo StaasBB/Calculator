@@ -1,0 +1,27 @@
+{
+  "version": "RFAB SE XI | Respect Edition [ver. ]",
+  "shortVersion": "Respect",
+  "trees": [
+        {
+      "id": "illusion",
+      "title": "Иллюзия",
+      "classType": "magic",
+      "themeColor": "blue",
+      "nodes": [
+        {
+          "id": "begger",
+          "name": "Дайте доступ к новой версии",
+          "levelReq": 599,
+          "requires": [],
+          "effects": [
+            "• Позволяет ввести поддержку самой последней версии сборки",
+            "  [по умолчанию поддержка ведется только у общедоступных версий",
+            "  или как карта ляжет)]"
+          ],
+          "x": 335,
+          "y": 430
+        }
+      ]
+    }
+  ]
+}

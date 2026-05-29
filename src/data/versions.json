@@ -1,0 +1,12 @@
+[
+  {
+    "url": "./src/data/perks_prime.json",
+    "fullName": "RFAB SE XI | Prime Edition",
+    "shortName": "Prime"
+  },
+  {
+    "url": "./src/data/perks_respect.json",
+    "fullName": "RFAB SE XI | Respect Edition",
+    "shortName": "Respect"
+  }
+]
