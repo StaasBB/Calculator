@@ -27,7 +27,7 @@ export class ProfileManager {
 
     initEvents() {
         // ИСПРАВЛЕНО: При клике на кнопки мы принудительно очищаем старый таймер,
-        // чтобы он не закрывал только что открытое новое окно!
+        // чтобы он не закрывал только что открытое новое окно
         if (this.btnLoad) {
             this.btnLoad.addEventListener('click', () => {
                 this.clearLeaveTimeout();
@@ -103,7 +103,7 @@ export class ProfileManager {
             const clickedOnSave = this.btnSave && this.btnSave.contains(e.target);
             const clickedInsideDropdown = this.dropdown.contains(e.target);
 
-            // Если пользователь тапнул МИМО всех этих элементов — мягко закрываем меню
+            // Если пользователь тапнул МИМО всех этих элементов закрываем меню
             if (!clickedOnLoad && !clickedOnSave && !clickedInsideDropdown) {
                 this.closeDropdown();
                 this.onStateChange();
@@ -112,9 +112,7 @@ export class ProfileManager {
 
     }
 
-    /**
-     * ОПТИМИЗАЦИЯ: Изолированный безопасный метод для сброса таймера
-     */
+    // ОПТИМИЗАЦИЯ: Изолированный безопасный метод для сброса таймера
     clearLeaveTimeout() {
         if (this.leaveTimeout) {
             clearTimeout(this.leaveTimeout);
@@ -162,10 +160,8 @@ export class ProfileManager {
         }
     }
 
-    /**
-     * ФИНАЛЬНОЕ ИСПРАВЛЕНИЕ: Логика динамического расширения теперь 
-     * гарантированно оставляет один пустой слот на конце.
-     */
+
+    // Логика динамического расширения гарантированно оставляет один пустой слот на конце.
     getSlotsList() {
         const slots = [];
         let maxFoundIndex = 3; 

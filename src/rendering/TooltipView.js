@@ -1,17 +1,14 @@
-/**
- * Класс TooltipView (Фронтенд-слой)
- * Отвечает исключительно за рендеринг, стилизацию и позиционирование 
- * всплывающей подсказки (тултипа) на экране. Не содержит никакой бизнес-логики.
- */
+//Отвечает исключительно за рендеринг, стилизацию и позиционирование 
+//всплывающей подсказки (тултипа) на экране. Не содержит никакой бизнес-логики.
 export class TooltipView {
     constructor() {
         this.el = null;
         this.initDOM();
     }
 
-    /**
-     * Инициализация структуры тултипа в HTML документе
-     */
+
+    // Инициализация структуры тултипа в HTML документе
+
     initDOM() {
         // Защита от дублирования элемента в DOM
         if (document.getElementById('calculator-tooltip')) return;
@@ -65,34 +62,28 @@ export class TooltipView {
         this.el.style.border = `1.5px solid ${currentBorderColor}`;
         this.el.style.boxShadow = `0 8px 24px rgba(0, 0, 0, 0.7), 0 0 8px ${currentBorderColor}`;
 
-        // НОВОЕ: Вспомогательная функция для склонения слова "перк" в зависимости от числа
+        // Вспомогательная функция для склонения слова "перк" в зависимости от числа
         const getPerkPluralForm = (str) => {
             if (!str) return '';
-            // Вытаскиваем чистое число без знаков плюс/минус (например, "+3" -> 3)
             const count = Math.abs(parseInt(str, 10));
             if (isNaN(count)) return '';
 
             const mod10 = count % 10;
             const mod100 = count % 100;
 
-            // Правила склонения русского языка:
-            // 11-14 перков
             if (mod100 >= 11 && mod100 <= 14) {
                 return 'Перков';
             }
-            // 1 перк, 21 перк
-            if (mod10 === 1) {
+            else if (mod10 === 1) {
                 return 'Перк';
             }
-            // 2, 3, 4 перка
-            if (mod10 >= 2 && mod10 <= 4) {
+            else if (mod10 >= 2 && mod10 <= 4) {
                 return 'Перка';
             }
-            // 5-9, 0 перков
             return 'Перков';
         };
 
-        // Генерируем правильное русское окончание на основе переданной строки
+        // Генерируем правильное окончание на основе переданной строки
         const perkLabel = counterString !== null ? getPerkPluralForm(counterString) : '';
 
         // Формируем шапку тултипа
@@ -144,7 +135,7 @@ export class TooltipView {
             if (!trimmed) return;
 
             if (trimmed.startsWith("•")) {
-                // ИСПРАВЛЕНО НАМЕРТВО: display: flex и жесткий gap делают так, 
+                // ИСПРАВЛЕНО display: flex и жесткий gap делают так, 
                 // что точка стоит слева, а текст начинается СТРОГО с одной вертикальной линии
                 html += `
                     <div style="
@@ -161,7 +152,7 @@ export class TooltipView {
                         <span style="flex-grow: 1;">${trimmed.substring(1).trim()}</span>
                     </div>`;
             } else if (line.startsWith("  ") || line.startsWith("\t")) {
-                // ИСПРАВЛЕНО НАМЕРТВО: Подгоняем внутренний отступ (padding-left: 22px),
+                // ИСПРАВЛЕНО Подгоняем внутренний отступ (padding-left: 22px),
                 // чтобы обычный текст без точек начинался СТРОГО по той же вертикальной линии, что и верхний текст
                 html += `
                     <div style="
@@ -201,9 +192,8 @@ export class TooltipView {
         this.updatePosition(x, y);
     }
 
-    /**
-     * Рассчитывает позицию тултипа на экране, предотвращая его выход за границы дисплея
-     */
+
+    // Рассчитывает позицию тултипа на экране, предотвращая его выход за границы дисплея
     updatePosition(clientX, clientY) {
         if (!this.el) return;
 
@@ -235,9 +225,7 @@ export class TooltipView {
         this.el.style.top = `${top}px`;
     }
 
-    /**
-     * Скрывает тултип с экрана
-     */
+    // Скрывает тултип с экрана
     hide() {
         if (this.el) {
             this.el.classList.remove('visible');

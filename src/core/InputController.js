@@ -34,7 +34,7 @@ export class InputController {
     updateTooltipForNode(e, node) {
         if (!this.renderer || !this.renderer.tooltipSystem || !this.state.activeTree) return;
 
-        // Запрашиваем чистые расчеты у бэкенд-слоя без каких-либо искусственных инверсий флагов
+        // Запрашиваем чистые расчеты у бэкенд-слоя
         const prediction = PerkStatePredictor.predictAction(this.state.activeTree, node);
         const currentHexColor = this.renderer.getColorFromCSS(this.state.activeTree, 'main');
         
@@ -58,7 +58,7 @@ export class InputController {
             let clickedInSidebar = false;
             let clickedOnNode = false;
             
-            // 1. Проверяем попадание в сайдбар (переключение веток)
+            // 1. попадание в сайдбар (переключение веток)
             this.state.allTrees.forEach(tree => {
                 if (!tree.hitBox) return;
                 if (x > tree.hitBox.x && x < tree.hitBox.x + tree.hitBox.w &&
@@ -74,7 +74,7 @@ export class InputController {
 
             if (clickedInSidebar) return;
 
-            // 2. Проверяем попадание в ноды (перки) дерева
+            // 2. попадание в ноды (перки) дерева
             if (this.state.activeTree) {
                 const relativeX = x - this.renderer.sidebarWidth;
                 
@@ -84,25 +84,22 @@ export class InputController {
                         y > node.hitBox.y && y < node.hitBox.y + node.hitBox.h) {
                         
                         if (e.isTouch) {
-                            // ЖЕЛЕЗНЫЙ МОБИЛЬНЫЙ ФИКС:
                             // Сначала рассчитываем и фиксируем тултип по ИСХОДНОМУ состоянию дерева.
-                            // Предсказатель увидит всю честную цепочку (+3, +5, -4) до того, как данные изменятся!
                             this.updateTooltipForNode(e, node);
                             
                             // И только после этого меняем состояние перков в базе данных
                             DependencyChecker.handleNodeClick(this.state.activeTree, node);
                             
-                            // На смартфонах жестко зачищаем анимации, чтобы не тратить батарею
+                            // На смартфонах зачищаем анимации
                             if (this.renderer) {
                                 this.renderer.activePrediction = null;
                                 this.renderer.hoveredNode = null;
                             }
                         } else {
-                            // ЖЕЛЕЗНЫЙ ПК ФИКС:
                             // На ПК мышь остается на месте, поэтому сначала меняем состояние в базе данных
                             DependencyChecker.handleNodeClick(this.state.activeTree, node);
                             
-                            // Мгновенно пересчитываем новый прогноз вдогонку, чтобы перерисовать линии пунктиром
+                            //пересчитываем новый прогноз вдогонку чтобы перерисовать линии пунктиром
                             if (this.renderer) {
                                 const newPrediction = PerkStatePredictor.predictAction(this.state.activeTree, node);
                                 this.renderer.activePrediction = newPrediction;
@@ -147,7 +144,6 @@ export class InputController {
                 e.preventDefault(); 
             }
             if (e.changedTouches && e.changedTouches.length > 0) {
-                // ИСПРАВЛЕНО: Корректно берем первый элемент из коллекции касаний [0]
                 const touch = e.changedTouches[0];
                 
                 const fakeEvent = {
@@ -201,7 +197,6 @@ export class InputController {
                     if (relativeX > node.hitBox.x && relativeX < node.hitBox.x + node.hitBox.w &&
                         y > node.hitBox.y && y < node.hitBox.y + node.hitBox.h) {
                         
-                        // НОВОЕ (Архитектурное разделение):
                         // Запрашиваем у бэкенд-предсказателя полный расчет цепочки для этой ноды
                         const prediction = PerkStatePredictor.predictAction(this.state.activeTree, node);
 
@@ -229,7 +224,7 @@ export class InputController {
                     if (this.renderer.activePrediction || this.renderer.hoveredNode) {
                         this.renderer.activePrediction = null;
                         this.renderer.hoveredNode = null;
-                        this.onStateChange(); // Делаем один финальный чистый кадр
+                        this.onStateChange();
                     }
                 }
             }
@@ -240,7 +235,7 @@ export class InputController {
 
 
 
-        // Скрытие тултипов при уходе курсора (ПК)
+        // Скрытие тултипов при уходе курсора
         this.canvas.addEventListener('mouseleave', () => {
             if (this.renderer) {
                 this.renderer.mousePos = null;

@@ -21,7 +21,7 @@ export class UIManager {
         ctx.lineTo(this.sidebarWidth, ctx.canvas.height);
         ctx.stroke();
 
-        // РАСЧЕТ ИДЕАЛЬНОЙ СИММЕТРИИ И ОТСТУПОВ
+        // РАСЧЕТ СИММЕТРИИ И ОТСТУПОВ
         const buttonW = (this.sidebarWidth - 30) / 2; // Базовая ширина кнопки
         const buttonH = 36;                            // Высота кнопки
         const gap = 5;                                 // Уменьшенный отступ между кнопками
@@ -115,7 +115,7 @@ export class UIManager {
                     ctx.shadowBlur = 10;
                 }
 
-                // 1 слой: ТЕМНЫЙ, НО ЦВЕТНОЙ ФОН (Подложка карточки кнопки)
+                // 1 слой: ТЕМНЫЙ ФОН (Подложка карточки кнопки)
                 if (isSelected) {
                     ctx.fillStyle = bgColor; 
                 } else if (isHovered) {
@@ -129,7 +129,7 @@ export class UIManager {
                 // Сбрасываем тень
                 ctx.shadowBlur = 0;
 
-                // 2 слой: АТМОСФЕРНЫЙ ЦВЕТНОЙ ГРАДИЕНТ
+                // 2 слой: ЦВЕТНОЙ ГРАДИЕНТ
                 const gradient = ctx.createLinearGradient(x, buttonY, x, buttonY + buttonH);
                 if (isSelected) {
                     gradient.addColorStop(0, glowColor); 
@@ -146,10 +146,10 @@ export class UIManager {
                 this.drawRoundedRect(ctx, x, buttonY, buttonW, buttonH, 5);
                 ctx.fill();
 
-                // 3 слой: Объемная светящаяся рамка кнопок с правильным приоритетом
+                // 3 слой: Объемная светящаяся рамка кнопок
                 ctx.lineWidth = isSelected ? 1.5 : 1;
                 
-                // ИСПРАВЛЕНО НАМЕРТВО: Если ветка ВЫБРАНА, то рамка ВСЕГДА остается белой, даже при ховере
+                // ИСПРАВЛЕНО: Если ветка ВЫБРАНА, то рамка ВСЕГДА остается белой, даже при ховере
                 if (isSelected) {
                     ctx.strokeStyle = "#ffffff"; 
                     ctx.stroke();
@@ -190,13 +190,13 @@ export class UIManager {
 
                     // Строка 1: Название ветки
                     ctx.fillStyle = "#ffffff";
-                    ctx.font = (isSelected || isHovered) ? "bold 11px 'Segoe UI', Arial" : "11px 'Segoe UI', Arial";
+                    ctx.font = (isSelected || isHovered) ? "bold 12px 'Segoe UI', Arial" : "12px 'Segoe UI', Arial";
                     ctx.textBaseline = "middle";
                     ctx.fillText(tree.title, x + buttonW / 2, buttonY + (buttonH / 2) - 6);
 
                     // Строка 2: Характеристики под названием
                     ctx.font = "300 11px 'Segoe UI', Arial";
-                    ctx.fillStyle = "rgba(255, 255, 255, 0.45)";
+                    ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
                     
                     const labelPrefix = tree.classType === "extra" ? "уровень" : "навык";
                     const subText = maxTreeSkill > 0 
@@ -206,7 +206,7 @@ export class UIManager {
                     ctx.fillText(subText, x + buttonW / 2, buttonY + (buttonH / 2) + 7);
                 } else {
                     // ДЕФОЛТНЫЙ РЕЖИМ (Нет перков)
-                    ctx.fillStyle = (isSelected || isHovered) ? "#ffffff" : "rgba(255, 255, 255, 0.65)";
+                    ctx.fillStyle = (isSelected || isHovered) ? "#ffffff" : "rgba(255, 255, 255, 0.8)";
                     ctx.font = (isSelected || isHovered) ? "bold 12px 'Segoe UI', Arial" : "12px 'Segoe UI', Arial";
                     ctx.textBaseline = "middle";
                     ctx.fillText(tree.title, x + buttonW / 2, buttonY + buttonH / 2);

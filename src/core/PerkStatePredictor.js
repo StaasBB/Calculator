@@ -1,15 +1,10 @@
 import { DependencyChecker } from '../utils/DependencyChecker.js';
 
-/**
- * Класс PerkStatePredictor (Бэкенд-слой / Презентер)
- * Отвечает исключительно за подготовку данных прогноза для фронтенда.
- * Запрашивает чистые расчеты графов у DependencyChecker и переводит их в строки интерфейса.
- */
+ //Отвечает исключительно за подготовку данных прогноза для фронтенда.
+ //Запрашивает чистые расчеты графов у DependencyChecker и переводит их в строки интерфейса.
 export class PerkStatePredictor {
-    
-    /**
-     * Анализирует перк и возвращает готовый объект прогноза для TooltipView и CanvasRender
-     */
+
+    //Анализирует перк и возвращает готовый объект прогноза для TooltipView и CanvasRender
     static predictAction(tree, node) {
         if (!tree || !node) {
             return {
@@ -20,7 +15,7 @@ export class PerkStatePredictor {
             };
         }
 
-        // --- ЛОГИКА ДЕАКТИВАЦИИ (Сброс перка) ---
+        // --- ЛОГИКА ДЕАКТИВАЦИИ ---
         if (node.isActive) {
             // Запрашиваем расчет путей у Чеккера
             const dangerChainIds = DependencyChecker.getDeactivationChainIds(tree, node);
@@ -34,7 +29,7 @@ export class PerkStatePredictor {
             };
         } 
         
-        // --- ЛОГИКА АКТИВАЦИИ (Покупка перка) ---
+        // --- ЛОГИКА АКТИВАЦИИ ---
         else {
             // Запрашиваем расчет путей у Чеккера
             const activationChainIds = DependencyChecker.getActivationChainIds(tree, node);

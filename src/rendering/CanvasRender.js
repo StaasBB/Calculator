@@ -1,4 +1,3 @@
-// Подтягиваем обновленный фронтенд-класс отображения подсказок TooltipView
 import { TooltipView } from './TooltipView.js';
 import { UIManager } from './UIManager.js';
 
@@ -8,7 +7,6 @@ export class CanvasRender {
         this.ctx = ctx;
         this.sidebarWidth = 290; 
         
-        // Инициализируем TooltipView
         this.tooltipSystem = new TooltipView();
         this.uiManager = new UIManager(this.ctx, this.sidebarWidth);
     }
@@ -20,8 +18,9 @@ export class CanvasRender {
      * @param {Object|string} treeOrColorName - Объект ветки (tree) или чистое имя цвета ('red', 'green' и т.д.)
      * @param {string} role - Требуемый слой: 'main' (активный), 'bg' (фон), 'border' (рамка), 'glow' (свет)
      */
+
     getColorFromCSS(treeOrColorName, role = 'main') {
-        let colorName = 'yellow'; // Дефолт на случай непредвиденных данных
+        let colorName = 'yellow';
         
         if (typeof treeOrColorName === 'string') {
             colorName = treeOrColorName;
@@ -43,9 +42,8 @@ export class CanvasRender {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         const totalPoints = allTrees.reduce((sum, t) => sum + t.nodes.filter(n => n.isActive).length, 0);
 
-        // ФРОНТЕНД-ЭФФЕКТ: Вычисляем мягкую синусоидальную пульсацию прозрачности от 0.35 до 0.85
         // Скорость пульсации регулируется множителем (0.005)
-        this.pulseAlpha = 0.45 + Math.sin(Date.now() * 0.003) * 0.25;
+        this.pulseAlpha = 0.45 + Math.sin(Date.now() * 0.002) * 0.25;
         
         // 1. Отрисовка Сайдбара
         this.uiManager.renderSidebar(allTrees, activeTree, totalPoints, this.getColorFromCSS.bind(this), this.mousePos || null);
@@ -77,7 +75,7 @@ export class CanvasRender {
         
         // Красивое название в фоне (большая тень)
         this.ctx.fillStyle = "rgba(255, 255, 255, 0.03)";
-        this.ctx.font = "bold 88px 'Segoe UI', Arial";
+        this.ctx.font = "bold 60px 'Segoe UI', Arial";
         this.ctx.textAlign = "left";
         this.ctx.fillText(activeTree.title, 40, 90); 
 
@@ -122,21 +120,16 @@ export class CanvasRender {
                     let isHoverChain = false;
                     let isDangerChain = false;
 
-                    // Если бэкенд передал затронутые ID для анимации
+                    // Извлекаем массив затронутых ID из бэкенд-прогноза
                     if (this.activePrediction && chainIds.length > 0) {
                         if (actionType === 'activate') {
-                            // Проверяем, горит ли уже эта соединительная линия по факту
                             const isLineCurrentlyActive = node.isActive && parent.isActive;
-
-                            // Линия должна мигать, если оба её конца (и родитель, и ребенок) входят в просчитанный бэкендом chainIds,
-                            // но при этом сама эта линия связи между ними в данный момент еще СЕРАЯ (неактивная)
                             if (chainIds.includes(node.id) && chainIds.includes(parent.id)) {
                                 if (!isLineCurrentlyActive) {
                                     isHoverChain = true;
                                 }
                             }
                         } else if (actionType === 'deactivate') {
-                            // При деактивации пунктиром горят все связи отваливающейся ветки
                             if (chainIds.includes(node.id) || chainIds.includes(parent.id)) {
                                 if (node.isActive && parent.isActive) {
                                     isDangerChain = true;
@@ -145,13 +138,10 @@ export class CanvasRender {
                         }
                     }
 
-
-
-
                     this.ctx.save();
                     
                     if (isDangerChain) {
-                        // 1. Рисуем толстую ЧЕРНУЮ подложку, чтобы рубиновый пунктир не сливался с кованым воином
+                        // 1. Черная толстая подложка-контраст
                         this.ctx.beginPath();
                         this.ctx.moveTo(x, y);
                         this.ctx.lineTo(parent.x, parent.y);
@@ -159,32 +149,44 @@ export class CanvasRender {
                         this.ctx.lineWidth = 6;
                         this.ctx.stroke();
 
-                        // 2. Поверх рисуем яркий рубиново-розовый пунктир с пульсацией
+                        // 2. Рубиново-розовый пунктир отмены с пульсацией
                         this.ctx.beginPath();
                         this.ctx.moveTo(x, y);
                         this.ctx.lineTo(parent.x, parent.y);
-                        this.ctx.setLineDash([4, 4]); // Пунктир: 4px штрих, 4px пропуск
+                        this.ctx.setLineDash([4, 4]);
                         this.ctx.strokeStyle = `rgba(255, 77, 121, ${this.pulseAlpha})`; 
                         this.ctx.lineWidth = 3;
                         this.ctx.stroke();
                     } 
                     else if (isHoverChain) {
-                        // Сплошное мягкое мигание цепочки активации основным цветом ветки из JSON
+                        // ЭФФЕКТ ХОВЕРА НА СВЯЗИ: Пульсирующее неоновое свечение при наведении
+                        this.ctx.shadowColor = mainColor;
+                        this.ctx.shadowBlur = 10;
+
                         this.ctx.beginPath();
                         this.ctx.moveTo(x, y);
                         this.ctx.lineTo(parent.x, parent.y);
                         this.ctx.strokeStyle = mainColor;
-                        this.ctx.globalAlpha = this.pulseAlpha;
+                        this.ctx.globalAlpha = this.pulseAlpha; // Применяем мягкое мигание
                         this.ctx.lineWidth = 4;
                         this.ctx.stroke();
                     } 
                     else {
-                        // Обычное стандартное состояние линии
+                        // СТАНДАРТНОЕ И ПОСТОЯННОЕ СОСТОЯНИЕ ЛИНИИ
                         this.ctx.beginPath();
                         this.ctx.moveTo(x, y);
                         this.ctx.lineTo(parent.x, parent.y);
-                        this.ctx.strokeStyle = isLineActive ? mainColor : "#222226";
-                        this.ctx.lineWidth = 3;
+                        
+                        if (isLineActive) {
+                            // Добавляем ПОСТОЯННОЕ свечение для изученных путей
+                            this.ctx.shadowColor = mainColor;
+                            this.ctx.shadowBlur = 8;
+                            this.ctx.strokeStyle = mainColor;
+                            this.ctx.lineWidth = 3.5; // Слегка утолщаем активные линии для сочности
+                        } else {
+                            this.ctx.strokeStyle = "#222226";
+                            this.ctx.lineWidth = 3;
+                        }
                         this.ctx.stroke();
                     }
 
@@ -192,6 +194,7 @@ export class CanvasRender {
                 }
             });
         });
+
 
         // ШАГ 2: Рисуем кружки и тексты (верхний слой)
         activeTree.nodes.forEach(node => {
@@ -212,7 +215,6 @@ export class CanvasRender {
             this.ctx.save();
             this.ctx.beginPath();
             this.ctx.arc(x, y, 14, 0, Math.PI * 2);
-            // Рисуем глухой круг цвета заднего фона центрального окна, чтобы перекрыть линии
             this.ctx.fillStyle = "rgba(12, 12, 14, 1.0)"; 
             this.ctx.fill();
             this.ctx.restore();
@@ -220,16 +222,18 @@ export class CanvasRender {
             // --- ШАГ Б: ОТРИСОВКА САМОЙ НОДЫ С ЭФФЕКТОМ СВЕЧЕНИЯ (GLOW) ---
             this.ctx.save();
             
-            // Включаем эффект неоновой ауры (подсветки) при наведении или участии в цепочке
             if (dangerThisNode) {
                 this.ctx.shadowColor = "#ff4d79"; // Рубиновая аура для отмены
-                this.ctx.shadowBlur = 12;
+                this.ctx.shadowBlur = 14;
             } else if (pulseThisNode) {
                 this.ctx.shadowColor = mainColor; // Цветная аура ветки для прокачки
-                this.ctx.shadowBlur = 12;
+                this.ctx.shadowBlur = 14;
             } else if (this.hoveredNode && this.hoveredNode.id === node.id) {
-                // Если мышь просто наведена на перк (без цепочек) — тоже даем легкую подсветку
                 this.ctx.shadowColor = node.isActive ? "#ffffff" : mainColor;
+                this.ctx.shadowBlur = 10;
+            } else if (node.isActive) {
+                // Добавляем ПОСТОЯННОЕ свечение для всех активированных перков
+                this.ctx.shadowColor = mainColor;
                 this.ctx.shadowBlur = 8;
             }
 
@@ -249,12 +253,14 @@ export class CanvasRender {
             } else {
                 this.ctx.fillStyle = node.isActive ? mainColor : "#16161a";
                 this.ctx.fill();
+                // Для активных перков делаем белую обводку ярче
                 this.ctx.strokeStyle = node.isActive ? "#ffffff" : mainColor;
             }
 
             this.ctx.lineWidth = 2;
             this.ctx.stroke();
-            this.ctx.restore(); // Сбрасываем прозрачность и эффекты тени/свечения перед текстом
+            this.ctx.restore(); // Чистим контекст перед текстом
+
 
             // --- ШАГ В: СТАТИЧНАЯ ОТРИСОВКА ТЕКСТА ---
             this.ctx.save();

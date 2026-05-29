@@ -1,6 +1,6 @@
 import { PerkTree } from './core/PerkTree.js';
 import { CanvasRender } from './rendering/CanvasRender.js';
-// Импортируем новый Контроллер
+
 import { InputController } from './core/InputController.js';
 import { DependencyChecker } from './utils/DependencyChecker.js';
 import { BuildExporter } from './storage/BuildExporter.js';
@@ -17,7 +17,7 @@ let state = {
     allTrees: []
 };
 
-// ОПТИМИЗАЦИЯ: Функция рендера вынесена наверх, чтобы быть доступной всем менеджерам без конфликтов областей видимости
+// Функция рендера вынесена наверх, чтобы быть доступной всем менеджерам без конфликтов областей видимости
 function render() {
     if (renderer && state.activeTree) {
         renderer.render(state.activeTree, state.allTrees);
@@ -33,9 +33,9 @@ async function init() {
 
         // 2. Инициализируем структуры данных веток (СТРОГО после получения данных)
         state.allTrees = data.trees.map(t => new PerkTree(t));
-        state.activeTree = state.allTrees[0] || null; // По дефолту первая ветка
+        state.activeTree = state.allTrees[0] || null;
 
-        // 3. Загружаем билд: Ссылка из URL в приоритете, если пустая — берем LocalStorage
+        // 3. Загружаем билд: Ссылка из URL в приоритете, если пустая берем LocalStorage
         const urlHash = BuildExporter.getHashFromUrl();
         if (urlHash) {
             BuildExporter.applyGlobalHash(state.allTrees, urlHash);
@@ -46,7 +46,7 @@ async function init() {
         // Валидируем связи на случай битых или устаревших сохранений
         state.allTrees.forEach(tree => DependencyChecker.validate(tree));
 
-        // 4. ИСПРАВЛЕНО: Инициализируем новый контроллер ввода (InputController) вместо старого InputManager
+        // 4. Инициализируем новый контроллер ввода
         new InputController(canvas, state, renderer, render);
 
         // 5. Инициализируем менеджер профилей (кнопки ЗАГРУЗИТЬ / СОХРАНИТЬ в Сайдбаре)

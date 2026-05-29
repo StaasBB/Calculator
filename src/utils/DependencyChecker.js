@@ -1,13 +1,8 @@
-/**
- * Класс DependencyChecker (Бэкенд-слой / Бизнес-логика)
- * Главный центр управления графом перков. Содержит все математические алгоритмы
- * обхода дерева, расчета связей, массовой активации и деактивации узлов.
- */
+// Главный центр управления графом перков. Содержит все математические алгоритмы
+// обхода дерева, расчета связей, массовой активации и деактивации узлов
 export class DependencyChecker {
     
-    /**
-     * Точка входа для изменения состояния перка по клику/тапу
-     */
+    // Точка входа для изменения состояния перка по клику/тапу
     static handleNodeClick(tree, node) {
         if (!node.isActive) {
             this.activateChain(tree, node);
@@ -16,9 +11,7 @@ export class DependencyChecker {
         }
     }
 
-    /**
-     * Активирует перк и всю вычисленную цепочку его родителей
-     */
+    // Активирует перк и всю вычисленную цепочку его родителей
     static activateChain(tree, node) {
         if (!tree || !node) return;
 
@@ -30,13 +23,10 @@ export class DependencyChecker {
         node.isActive = true;
     }
 
-    /**
-     * Отключает перк и все зависимые от него верхние ветки
-     */
+    // Отключает перк и все зависимые от него верхние ветки
     static deactivateChain(tree, node) {
         if (!tree || !node) return;
 
-        // ИСПРАВЛЕНО: Поскольку метод статический, вызываем через DependencyChecker.getDeactivationChainIds
         const chainIds = DependencyChecker.getDeactivationChainIds(tree, node);
         chainIds.forEach(id => {
             const targetNode = tree.getNodeById(id);
@@ -45,10 +35,7 @@ export class DependencyChecker {
         node.isActive = false;
     }   
 
-        /**
-     * АЛГОРИТМ: Симулирует сброс ветки в памяти и собирает ID всех перков, которые обрушатся
-     * ИСПРАВЛЕНО: Добавлено ключевое слово static, чтобы метод был виден из других файлов!
-     */
+    // Симулирует сброс ветки в памяти и собирает ID всех перков, которые обрушатся
     static getDeactivationChainIds(tree, startNode) {
         const originalStates = new Map();
         tree.nodes.forEach(n => originalStates.set(n.id, n.isActive));
@@ -82,9 +69,7 @@ export class DependencyChecker {
         return affectedIds;
     }
 
-    /**
-     * АЛГОРИТМ: Рекурсивно собирает всю цепочку неактивных родителей до самого корня дерева
-     */
+    // Рекурсивно собирает всю цепочку неактивных родителей до самого корня дерева
     static getActivationChainIds(tree, startNode, visited = new Set()) {
         if (!startNode || visited.has(startNode.id)) return [];
         visited.add(startNode.id);
@@ -116,11 +101,8 @@ export class DependencyChecker {
         return chain;
     }
 
-    /**
-     * АЛГОРИТМ: Симулирует активацию перка в памяти и собирает ID всех узлов,
-     * которые изменят свое состояние или свяжутся с этой цепочкой.
-     * ИСПРАВЛЕНО НАМЕРТВО: Корректно находит всех предков (неактивных родителей) до корня.
-     */
+    // Симулирует активацию перка в памяти и собирает ID всех узлов,
+    // которые изменят свое состояние или свяжутся с этой цепочкой
     static getActivationChainIds(tree, startNode) {
         if (!tree || !startNode) return [];
 
@@ -147,9 +129,9 @@ export class DependencyChecker {
             affectedIds.push(startNode.id);
         }
 
-        // 4. ИСПРАВЛЕНО НАМЕРТВО: ФИКС СКРЫТЫХ МОСТОВ ДЛЯ РАЗВИЛОК И АКТИВНЫХ ПРЕДКОВ
+        // 4. ФИКС СКРЫТЫХ МОСТОВ ДЛЯ РАЗВИЛОК И АКТИВНЫХ ПРЕДКОВ
         
-        // А. Мосты вверх (к активным потомкам, например, к Взрыву энергии)
+        // А. Мосты вверх
         tree.nodes.forEach(node => {
             if (node.isActive === true && node.requires) {
                 const connectsToNewChain = node.requires.some(reqId => affectedIds.includes(reqId));
@@ -159,10 +141,10 @@ export class DependencyChecker {
             }
         });
 
-        // Б. НОВОЕ: Мосты вниз (к уже активным предкам/родителям, например, к Интуиции зачарователя)
+        // Б. Мосты вниз
         // Если перк из нашей новой будущей цепочки прокачки требует родителя, который УЖЕ активен в базе,
-        // мы ОБЯЗАНЫ добавить этого активного родителя в массив chainIds. 
-        // Это заставит соединительную линию между ними мягко мигать цветом ветки на Canvas!
+        // мы ОБЯЗАНЫ добавить этого активного родителя в массив chainIds
+        // Это заставит соединительную линию между ними мигать цветом ветки на Canvas
         tree.nodes.forEach(node => {
             if (affectedIds.includes(node.id) && node.requires) {
                 node.requires.forEach(reqId => {
@@ -178,12 +160,10 @@ export class DependencyChecker {
 
     }
 
-    /**
-     * ВНУТРЕННИЙ МЕТОД СИМУЛЯЦИИ: Опирается СТРОГО на переданную карту virtualStates.
-     * Это позволяет рекурсии видеть реальные разрывы цепей и докачивать предков до самого старта.
-     */
+    // ВНУТРЕННИЙ МЕТОД СИМУЛЯЦИИ: Опирается СТРОГО на переданную карту virtualStates.
+    // Это позволяет рекурсии видеть реальные разрывы цепей и докачивать предков до самого старта.
     static _runSimulationActivate(tree, nodeId, virtualStates) {
-        // Если в виртуальном пространстве перк уже активен — выходим, этот путь уже просчитан
+        // Если в виртуальном пространстве перк уже активен выходим, этот путь уже просчитан
         if (virtualStates.get(nodeId) === true) return;
 
         const node = tree.getNodeById(nodeId);
@@ -193,7 +173,7 @@ export class DependencyChecker {
             // Проверяем, есть ли среди родителей хотя бы один перк, активный в нашей виртуальной карте
             const hasAnyActiveParent = node.requires.some(reqId => virtualStates.get(reqId) === true);
 
-            // Если пути к старту через родителей нет — рекурсивно запускаем симуляцию для ВСЕХ родителей (предков)
+            // Если пути к старту через родителей нет рекурсивно запускаем симуляцию для ВСЕХ родителей
             if (!hasAnyActiveParent) {
                 node.requires.forEach(reqId => {
                     this._runSimulationActivate(tree, reqId, virtualStates);
@@ -205,11 +185,7 @@ export class DependencyChecker {
         virtualStates.set(nodeId, true);
     }
 
-
-
-    /**
-     * Проверяет валидность дерева (после загрузки сохранений)
-     */
+    // Проверяет валидность дерева (после загрузки сохранений)
     static validate(tree) {
         let stateChanged = true;
         while (stateChanged) {

@@ -1,14 +1,12 @@
 export class BuildExporter {
-    /**
-     * ЭКСТРЕМАЛЬНОЕ СЖАТИЕ: превращает текст '0101' в настоящие компактные байты
-     */
+    // ЭКСТРЕМАЛЬНОЕ СЖАТИЕ: превращает текст '0101' в компактные байты
     static generateGlobalHash(allTrees) {
         // 1. Собираем одну длинную сплошную строку из '0' и '1'
         const bitsStr = allTrees.map(tree => {
             return tree.nodes.map(n => n.isActive ? '1' : '0').join('');
         }).join('');
 
-        // 2. Вычисляем, сколько байт нам понадобится (округляем в большую сторону)
+        // 2. Вычисляем, сколько байт нам понадобится
         const byteLength = Math.ceil(bitsStr.length / 8);
         const bytes = new Uint8Array(byteLength);
 
@@ -29,9 +27,7 @@ export class BuildExporter {
             .replace(/=+$/, '');   // Убираем уродливые знаки '=' на конце
     }
 
-    /**
-     * РАСПАКОВКА: читает компактные байты и восстанавливает перки
-     */
+    // РАСПАКОВКА: читает компактные байты и восстанавливает перки
     static applyGlobalHash(allTrees, safeBase64Hash) {
         if (!safeBase64Hash) return false;
         try {
@@ -74,9 +70,7 @@ export class BuildExporter {
         }
     }
 
-    /**
-     * Генерирует ссылку для копирования
-     */
+    // Генерирует ссылку для копирования
     static getShareUrl(allTrees) {
         const hash = this.generateGlobalHash(allTrees);
         const currentUrl = new URL(window.location.origin + window.location.pathname);
@@ -84,9 +78,7 @@ export class BuildExporter {
         return currentUrl.toString();
     }
 
-    /**
-     * Достает хэш из адресной строки
-     */
+    // Достает хэш из адресной строки
     static getHashFromUrl() {
         const urlParams = new URLSearchParams(window.location.search);
         return urlParams.get('build');
