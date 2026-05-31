@@ -68,6 +68,11 @@ async function loadVersion(jsonUrl, selectorInstance = null) {
             BuildSaver.loadFromLocalStorage(state.allTrees);
         }
         
+        const urlNote = BuildExporter.getNoteFromUrl();
+        if (urlNote && state.notesManager) {
+            state.notesManager.setExternalNote(urlNote);
+        }
+        
         // Валидируем связи на случай битых или устаревших сохранений
         state.allTrees.forEach(tree => DependencyChecker.validate(tree));
 

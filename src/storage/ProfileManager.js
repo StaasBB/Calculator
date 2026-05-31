@@ -2,6 +2,8 @@ import { ProfileService } from './ProfileService.js';
 import { ProfileView } from '../rendering/ProfileView.js';
 import { DependencyChecker } from '../utils/DependencyChecker.js';
 import { BuildExporter } from './BuildExporter.js';
+import { NotesManager } from './NotesManager.js';
+import { ToastView } from '../rendering/ToastView.js';
 
 export class ProfileManager {
     constructor(state, onStateChange) {
@@ -12,6 +14,10 @@ export class ProfileManager {
         this.editingSlotId = null; 
         this.leaveTimeout = null;
         this.isEditingInputFocused = false;
+
+        this.notesManager = new NotesManager(this.onStateChange);
+        this.state.notesManager = this.notesManager;
+        window.rfabNotesManager = this.notesManager;
 
         // Инициализируем сервисные бэк/фронт слои
         this.service = new ProfileService();
@@ -141,6 +147,7 @@ export class ProfileManager {
                     () => { // Delete
                         this.service.deleteSlot(slot.id);
                         this.renderDropdown();
+                        ToastView.show("Слот удалён");
                     },
                     () => { // Клик по строке профиля
                         if (this.currentMode === 'save') {
@@ -148,7 +155,7 @@ export class ProfileManager {
                             this.editingSlotId = slot.id;
                             this.renderDropdown();
                         } else if (this.currentMode === 'load' && slot.data) {
-                            this.executeLoad(slot.data.build);
+                            this.executeLoad(slot.data.build, slot.id);
                         }
                     }
                 );
@@ -156,28 +163,45 @@ export class ProfileManager {
         });
     }
 
-    executeSave(slotId, nameInput) {
-        this.service.saveSlot(slotId, nameInput, this.state.allTrees);
-        this.isEditingInputFocused = false;
-        this.editingSlotId = null;
-        this.renderDropdown();
-        this.onStateChange();
-    }
+executeSave(slotId, nameInput) {
+    this.service.saveSlot(
+        slotId,
+        nameInput,
+        this.state.allTrees,
+        this.notesManager.getNote()
+    );
 
-    executeLoad(buildHash) {
+    const savedSlot = this.service.getSlotData(slotId);
+    this.notesManager.setSlot(slotId, savedSlot?.note || '');
+
+    ToastView.show("Билд сохранён");
+
+    this.isEditingInputFocused = false;
+    this.editingSlotId = null;
+    this.renderDropdown();
+    this.onStateChange();
+}
+
+    executeLoad(buildHash, slotId = null) {
         if (typeof buildHash === 'string') {
             BuildExporter.applyGlobalHash(this.state.allTrees, buildHash);
         }
+
         this.state.allTrees.forEach(t => DependencyChecker.validate(t));
-        
-        // Перезапускаем глобальный автосейв в LocalStorage, если подключен класс
+
         import('./BuildSaver.js').then(({ BuildSaver }) => {
             if (BuildSaver && BuildSaver.saveToLocalStorage) {
                 BuildSaver.saveToLocalStorage(this.state.allTrees);
             }
         }).catch(() => {});
 
+        if (slotId !== null) {
+            const slotData = this.service.getSlotData(slotId);
+            this.notesManager.setSlot(slotId, slotData?.note || '');
+        }
+
         this.closeDropdown();
+        ToastView.show("Билд загружен");
         this.onStateChange();
     }
 }

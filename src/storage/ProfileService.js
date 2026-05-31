@@ -65,13 +65,31 @@ export class ProfileService {
     /**
      * Записывает данные сборки в конкретный слот
      */
-    saveSlot(slotId, name, allTrees) {
+    saveSlot(slotId, name, allTrees, note = '') {
         const compressedBuildHash = BuildExporter.generateGlobalHash(allTrees);
+
         const saveData = {
             name: name || `Билд ${slotId}`,
             build: compressedBuildHash
         };
+
+        if (note.trim()) {
+            saveData.note = note;
+        }
+
         localStorage.setItem(`${this.slotPrefix}${slotId}`, JSON.stringify(saveData));
+    }
+
+    getSlotData(slotId) {
+        const rawData = localStorage.getItem(`${this.slotPrefix}${slotId}`);
+        if (!rawData) return null;
+
+        try {
+            return JSON.parse(rawData);
+        } catch (e) {
+            console.error(`Поврежденный слот ${slotId}`, e);
+            return null;
+        }
     }
 
     /**

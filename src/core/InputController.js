@@ -2,6 +2,7 @@ import { DependencyChecker } from '../utils/DependencyChecker.js';
 import { BuildSaver } from '../storage/BuildSaver.js';
 import { BuildExporter } from '../storage/BuildExporter.js';
 import { PerkStatePredictor } from './PerkStatePredictor.js';
+import { ToastView } from '../rendering/ToastView.js';
 
 export class InputController {
     constructor(canvas, state, renderer, onStateChange) {
@@ -57,6 +58,18 @@ export class InputController {
             const { x, y } = this.getMousePos(e); 
             let clickedInSidebar = false;
             let clickedOnNode = false;
+
+            const notesHitBox = this.renderer?.uiManager?.notesButtonHitBox;
+            if (
+                notesHitBox &&
+                x > notesHitBox.x &&
+                x < notesHitBox.x + notesHitBox.w &&
+                y > notesHitBox.y &&
+                y < notesHitBox.y + notesHitBox.h
+            ) {
+                this.state.notesManager?.toggle();
+                return;
+            }
             
             // 1. попадание в сайдбар (переключение веток)
             this.state.allTrees.forEach(tree => {
@@ -260,10 +273,14 @@ export class InputController {
         if (btnShare) {
             btnShare.addEventListener('click', (e) => {
                 e.stopPropagation(); 
-                const shareUrl = BuildExporter.getShareUrl(this.state.allTrees);
+                const note = this.state.notesManager?.getNote?.() || '';
+                const shareUrl = BuildExporter.getShareUrl(this.state.allTrees, note);
                 navigator.clipboard.writeText(shareUrl)
-                    .then(() => alert("Ссылка на ваш билд скопирована в буфер обмена!"))
-                    .catch(err => console.error(err));
+                    .then(() => ToastView.show("Ссылка скопирована"))
+                    .catch(err => {
+                        console.error(err);
+                        ToastView.show("Не удалось скопировать ссылку", "error");
+                    });
             });
         }
 
@@ -273,6 +290,7 @@ export class InputController {
                 if (!this.state.activeTree) return;
                 this.state.activeTree.nodes.forEach(node => node.isActive = false);
                 BuildSaver.saveToLocalStorage(this.state.allTrees);
+                ToastView.show("Ветка сброшена");
                 this.onStateChange();
             });
         }
@@ -288,6 +306,7 @@ export class InputController {
                     this.resetConfirmationActive = false;
                     btnResetAll.textContent = "Сбросить всё";
                     BuildSaver.saveToLocalStorage(this.state.allTrees);
+                    ToastView.show("Билд сброшен");
                     this.onStateChange();
                 }
             });
@@ -298,5 +317,23 @@ export class InputController {
                 }
             });
         }
+    }
+
+    showToast(message) {
+        let toast = document.getElementById('rfab-toast');
+
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'rfab-toast';
+            document.body.appendChild(toast);
+        }
+
+        toast.textContent = message;
+        toast.classList.add('visible');
+
+        clearTimeout(this.toastTimeout);
+        this.toastTimeout = setTimeout(() => {
+            toast.classList.remove('visible');
+        }, 2200);
     }
 }

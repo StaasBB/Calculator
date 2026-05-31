@@ -9,6 +9,9 @@ export class CanvasRender {
         
         this.tooltipSystem = new TooltipView();
         this.uiManager = new UIManager(this.ctx, this.sidebarWidth);
+
+        this.hoverPulseStartTime = 0;
+        this.lastHoveredNodeId = null;
     }
 
     /**
@@ -42,8 +45,20 @@ export class CanvasRender {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         const totalPoints = allTrees.reduce((sum, t) => sum + t.nodes.filter(n => n.isActive).length, 0);
 
-        // Скорость пульсации регулируется множителем (0.005)
-        this.pulseAlpha = 0.45 + Math.sin(Date.now() * 0.002) * 0.25;
+        if (this.hoveredNode) {
+            if (this.lastHoveredNodeId !== this.hoveredNode.id) {
+                this.lastHoveredNodeId = this.hoveredNode.id;
+                this.hoverPulseStartTime = Date.now();
+            }
+
+            const elapsed = Date.now() - this.hoverPulseStartTime;
+
+            this.pulseAlpha = 0.25 + ((Math.sin(elapsed * 0.002 - Math.PI / 2) + 1) / 2) * 0.35;
+        } else {
+            this.lastHoveredNodeId = null;
+            this.hoverPulseStartTime = 0;
+            this.pulseAlpha = 0.25;
+        }
         
         // 1. Отрисовка Сайдбара
         this.uiManager.renderSidebar(allTrees, activeTree, totalPoints, this.getColorFromCSS.bind(this), this.mousePos || null);

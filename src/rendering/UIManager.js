@@ -220,6 +220,51 @@ export class UIManager {
             const rowsCount = Math.ceil(group.trees.length / 2);
             currentY += rowsCount * (buttonH + gap) + 15;
         }
+        // КНОПКА ЗАМЕТОК ВНИЗУ ЛЕВОГО МЕНЮ
+        const notesX = sidebarPadding;
+        const notesY = ctx.canvas.height - 58;
+        const notesW = (this.sidebarWidth - 30) / 2;
+        const notesH = 36;
+
+        const hasNote = window.rfabNotesManager?.hasNote?.() || false;
+        const isNotesHovered = mousePos &&
+            mousePos.x >= notesX &&
+            mousePos.x <= notesX + notesW &&
+            mousePos.y >= notesY &&
+            mousePos.y <= notesY + notesH;
+
+        const gold = getComputedStyle(document.documentElement)
+            .getPropertyValue('--yellow-main')
+            .trim() || '#f6b36a';
+
+        ctx.save();
+
+        ctx.fillStyle = isNotesHovered
+            ? 'rgba(246, 179, 106, 0.12)'
+            : 'rgba(12, 12, 14, 0.75)';
+
+        this.drawRoundedRect(ctx, notesX, notesY, notesW, notesH, 5);
+        ctx.fill();
+
+        ctx.strokeStyle = hasNote ? gold : 'rgba(255,255,255,0.45)';
+        ctx.lineWidth = hasNote ? 1.5 : 1;
+        ctx.stroke();
+
+        ctx.fillStyle = hasNote ? gold : '#ffffff';
+        ctx.font = isNotesHovered ? "bold 13px 'Segoe UI', Arial" : "13px 'Segoe UI', Arial";
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('Заметки', notesX + notesW / 2, notesY + notesH / 2);
+
+        ctx.restore();
+
+        this.notesButtonHitBox = {
+            x: notesX,
+            y: notesY,
+            w: notesW,
+            h: notesH
+        };
+
     }
 
     drawRoundedRect(ctx, x, y, width, height, radius) {

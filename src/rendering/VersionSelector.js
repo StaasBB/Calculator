@@ -3,6 +3,8 @@
  * Полностью динамический переключатель версий сборки.
  * Берет все данные из внешнего манифеста versions.json без единой захардкоженной строки.
  */
+import { ToastView } from './ToastView.js';
+
 export class VersionSelector {
     constructor(onVersionChange) {
         this.onVersionChange = onVersionChange;
@@ -119,6 +121,7 @@ export class VersionSelector {
             item.addEventListener('click', (e) => {
                 e.stopPropagation();
                 localStorage.setItem(this.storageKey, v.url);
+                ToastView.show(`Версия выбрана: ${v.shortName || v.fullName}`);
                 this.renderDropdown(); 
                 this.closeDropdown();
 
