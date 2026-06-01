@@ -41,7 +41,7 @@ export class CanvasRender {
         return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim() || "#555";
     }
 
-    render(activeTree, allTrees) {
+    render(activeTree, allTrees, perkBreakpoints = []) {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         const totalPoints = allTrees.reduce((sum, t) => sum + t.nodes.filter(n => n.isActive).length, 0);
 
@@ -61,8 +61,14 @@ export class CanvasRender {
         }
         
         // 1. Отрисовка Сайдбара
-        this.uiManager.renderSidebar(allTrees, activeTree, totalPoints, this.getColorFromCSS.bind(this), this.mousePos || null);
-        
+        this.uiManager.renderSidebar(
+            allTrees,
+            activeTree,
+            totalPoints,
+            this.getColorFromCSS.bind(this),
+            this.mousePos || null,
+            perkBreakpoints
+        );        
         // 2. Рисуем фон центрального игрового окна
         this.ctx.save();
         this.ctx.fillStyle = "rgba(12, 12, 14, 0.9)";
@@ -80,7 +86,7 @@ export class CanvasRender {
         // ЦИКЛ АНИМАЦИИ: Если контроллер передал активный бэкенд-прогноз,
         // заставляем холст постоянно перерисовываться для гладкого и мягкого мигания 60 FPS
         if (this.hoveredNode && this.activePrediction) {
-            requestAnimationFrame(() => this.render(activeTree, allTrees));
+            requestAnimationFrame(() => this.render(activeTree, allTrees, perkBreakpoints));
         }
     }
 

@@ -1,6 +1,7 @@
 {
   "version": "RFAB SE XI | Respect Edition [ver. ]",
   "shortVersion": "Respect",
+  "perkBreakpoints": [56, 64, 67, 68, 69],
   "trees": [
         {
       "id": "illusion",

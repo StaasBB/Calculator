@@ -15,13 +15,14 @@ const renderer = new CanvasRender(canvas, ctx);
 let state = {
     activeTree: null,
     allTrees: [],
-    currentVersion: ""
+    currentVersion: "",
+    perkBreakpoints: []
 };
 
 // Функция рендера вынесена наверх, чтобы быть доступной всем менеджерам без конфликтов областей видимости
 function render() {
     if (renderer && state.activeTree) {
-        renderer.render(state.activeTree, state.allTrees);
+        renderer.render(state.activeTree, state.allTrees, state.perkBreakpoints);
     }
 }
 
@@ -67,7 +68,7 @@ async function loadVersion(jsonUrl, selectorInstance = null) {
         } else {
             BuildSaver.loadFromLocalStorage(state.allTrees);
         }
-        
+
         const urlNote = BuildExporter.getNoteFromUrl();
         if (urlNote && state.notesManager) {
             state.notesManager.setExternalNote(urlNote);
@@ -75,6 +76,14 @@ async function loadVersion(jsonUrl, selectorInstance = null) {
         
         // Валидируем связи на случай битых или устаревших сохранений
         state.allTrees.forEach(tree => DependencyChecker.validate(tree));
+
+        // PERK BREAKPOINTS
+        state.perkBreakpoints = Array.isArray(data.perkBreakpoints)
+        ? data.perkBreakpoints
+            .map(Number)
+            .filter(n => Number.isFinite(n))
+            .sort((a, b) => a - b)
+        : [];
 
         // Отрисовываем обновленный кадр на холсте
         render();

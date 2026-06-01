@@ -4,7 +4,7 @@ export class UIManager {
         this.sidebarWidth = sidebarWidth;
     }
 
-    renderSidebar(allTrees, activeTree, totalPoints, getColor, mousePos = null) {
+    renderSidebar(allTrees, activeTree, totalPoints, getColor, mousePos = null, perkBreakpoints = []) {
         const ctx = this.ctx;
         
         // 1. Исходная заливка сплошного фона сайдбара с координаты 0
@@ -33,17 +33,28 @@ export class UIManager {
 
         // 2. ИЗОЛИРОВАННАЯ ОТРИСОВКА СЧЕТЧИКА
         ctx.save();
-        let currentY = 20; 
+        let currentY = 0; 
 
         ctx.textAlign = "left";
         ctx.textBaseline = "top";
-        ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
-        ctx.font = "11px 'Segoe UI', Arial";
-        ctx.fillText("ВСЕГО ПЕРКОВ:", sidebarPadding, currentY);
+        ctx.fillStyle = this.getPerkCounterColor(
+            totalPoints,
+            perkBreakpoints
+        );
 
-        ctx.fillStyle = "#f5f5f7"; 
         ctx.font = "bold 20px 'Segoe UI', Arial";
         ctx.fillText(totalPoints.toString(), sidebarPadding, currentY + 15);
+
+        const counterColor = this.getPerkCounterColor(totalPoints, perkBreakpoints);
+
+        ctx.fillStyle = counterColor.text;
+        ctx.shadowColor = counterColor.glow;
+        ctx.shadowBlur = counterColor.glow === 'transparent' ? 0 : 8;
+
+        ctx.font = "bold 20px 'Segoe UI', Arial";
+        ctx.fillText(totalPoints.toString(), sidebarPadding, currentY + 15);
+
+        ctx.shadowBlur = 0;
         ctx.restore(); 
 
         // Сдвигаем Y ниже счетчика к блокам веток
@@ -272,4 +283,37 @@ export class UIManager {
         ctx.moveTo(x + radius, y);
         ctx.lineTo(x + width - radius, y);
         ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-        ctx.lineTo(x + width, y + height - radius);ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);ctx.lineTo(x + radius, y + height);ctx.quadraticCurveTo(x, y + height, x, y + height - radius);ctx.lineTo(x, y + radius);ctx.quadraticCurveTo(x, y, x + radius, y);ctx.closePath();}}
+        ctx.lineTo(x + width, y + height - radius);ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);ctx.lineTo(x + radius, y + height);ctx.quadraticCurveTo(x, y + height, x, y + height - radius);ctx.lineTo(x, y + radius);ctx.quadraticCurveTo(x, y, x + radius, y);ctx.closePath();
+    }
+
+    getPerkCounterColor(totalPoints, perkBreakpoints) {
+        const points = Array.isArray(perkBreakpoints)
+            ? perkBreakpoints
+                .map(Number)
+                .filter(n => Number.isFinite(n))
+                .sort((a, b) => a - b)
+            : [];
+
+        if (!points.length || totalPoints < points[0]) {
+            return '#f5f5f7';
+        }
+
+        const crossed = points.filter(p => totalPoints >= p).length;
+        const lastIndex = points.length;
+
+        // Последний брейкпоинт — всегда заметно красный
+        if (crossed >= lastIndex) {
+            return '#ed2f2f';
+        }
+
+        // Ступени до последнего порога
+        const warningColors = [
+            '#f9c286', // 1-й порог: золото
+            '#e89a4f', // 2-й порог: янтарный
+            '#d9793f', // 3-й порог: оранжево-красный
+            '#c95c3a'  // 4-й и далее до последнего: приглушённый красноватый
+        ];
+
+        return warningColors[Math.min(crossed - 1, warningColors.length - 1)];
+    }
+}
