@@ -4,7 +4,7 @@ export class UIManager {
         this.sidebarWidth = sidebarWidth;
     }
 
-    renderSidebar(allTrees, activeTree, totalPoints, getColor) {
+    renderSidebar(allTrees, activeTree, totalPoints, getColor, mousePos = null, perkBreakpoints = []) {
         const ctx = this.ctx;
         
         // 1. Исходная заливка сплошного фона сайдбара с координаты 0
@@ -21,29 +21,40 @@ export class UIManager {
         ctx.lineTo(this.sidebarWidth, ctx.canvas.height);
         ctx.stroke();
 
-        // РАСЧЕТ ИДЕАЛЬНОЙ СИММЕТРИИ И ОТСТУПОВ
+        // РАСЧЕТ СИММЕТРИИ И ОТСТУПОВ
         const buttonW = (this.sidebarWidth - 30) / 2; // Базовая ширина кнопки
         const buttonH = 36;                            // Высота кнопки
-        const gap = 5;                                 // ИСПРАВЛЕНО: уменьшенный отступ между кнопками
+        const gap = 5;                                 // Уменьшенный отступ между кнопками
 
         // Вычисляем, сколько места займут две кнопки вместе со своим внутренним отступом gap
         const totalGridWidth = (buttonW * 2) + gap;
         // Динамически вычисляем отступ от краев сайдбара, чтобы сетка встала строго по центру
         const sidebarPadding = (this.sidebarWidth - totalGridWidth) / 2;
 
-        // 2. ИЗОЛИРОВАННАЯ ОТРИСОВКА СЧЕТЧИКА (Выровнен по одной оси с кнопками)
+        // 2. ИЗОЛИРОВАННАЯ ОТРИСОВКА СЧЕТЧИКА
         ctx.save();
-        let currentY = 20; 
+        let currentY = 0; 
 
         ctx.textAlign = "left";
         ctx.textBaseline = "top";
-        ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
-        ctx.font = "11px 'Segoe UI', Arial";
-        ctx.fillText("ВСЕГО ПЕРКОВ:", sidebarPadding, currentY);
+        ctx.fillStyle = this.getPerkCounterColor(
+            totalPoints,
+            perkBreakpoints
+        );
 
-        ctx.fillStyle = "#f5f5f7"; 
         ctx.font = "bold 20px 'Segoe UI', Arial";
         ctx.fillText(totalPoints.toString(), sidebarPadding, currentY + 15);
+
+        const counterColor = this.getPerkCounterColor(totalPoints, perkBreakpoints);
+
+        ctx.fillStyle = counterColor.text;
+        ctx.shadowColor = counterColor.glow;
+        ctx.shadowBlur = counterColor.glow === 'transparent' ? 0 : 8;
+
+        ctx.font = "bold 20px 'Segoe UI', Arial";
+        ctx.fillText(totalPoints.toString(), sidebarPadding, currentY + 15);
+
+        ctx.shadowBlur = 0;
         ctx.restore(); 
 
         // Сдвигаем Y ниже счетчика к блокам веток
@@ -61,11 +72,18 @@ export class UIManager {
             if (groups[t.classType]) groups[t.classType].trees.push(t);
         });
 
+        // ЛОКАЛЬНЫЙ ХЕЛПЕР ЦВЕТА: Напрямую вытаскивает спектральные переменные из :root по имени цвета
+        const getStyleColor = (colorName, role) => {
+            const cleanColor = colorName.replace('--', '').toLowerCase();
+            const variableName = `--${cleanColor}-${role}`;
+            return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim() || "#555";
+        };
+
         for (const key in groups) {
             const group = groups[key];
             if (group.trees.length === 0) continue;
 
-            // Отрисовка заголовков групп (Выровнены по одной оси с кнопками)
+            // Отрисовка заголовков групп
             ctx.save();
             ctx.textAlign = "left";
             ctx.textBaseline = "top";
@@ -83,31 +101,96 @@ export class UIManager {
                 const x = sidebarPadding + col * (buttonW + gap);
                 const buttonY = currentY + row * (buttonH + gap);
 
+                // Выбор ветки по оригинальной логике treeId
                 const isSelected = activeTree && activeTree.treeId === tree.treeId;
 
-                const mainColor = getColor(`--${tree.themeColor}`);
-                const lightColor = getColor(`--light-${tree.themeColor}`);
+                // Расчет ховера
+                const isHovered = mousePos && 
+                                  mousePos.x >= x && mousePos.x <= x + buttonW && 
+                                  mousePos.y >= buttonY && mousePos.y <= buttonY + buttonH;
 
-                // Считаем активные перки и максимальное требование к навыку конкретно для этой ветки
+                // Получаем спектральные цвета для фонов и рамок
+                const mainColor = getStyleColor(tree.themeColor, 'main');
+                const bgColor = getStyleColor(tree.themeColor, 'bg');
+                const glowColor = getStyleColor(tree.themeColor, 'glow');
+
+                // Считаем активные перки
                 const activeNodes = tree.nodes.filter(n => n.isActive);
                 const spentInTree = activeNodes.length;
 
                 ctx.save();
+
+                // ЭФФЕКТ СВЕЧЕНИЯ ДЛЯ ВЫБРАННОЙ КНОПКИ
                 if (isSelected) {
-                    ctx.fillStyle = mainColor;
-                } else {
-                    ctx.fillStyle = lightColor;
+                    ctx.shadowColor = mainColor;
+                    ctx.shadowBlur = 10;
                 }
-                
+
+                // 1 слой: ТЕМНЫЙ ФОН (Подложка карточки кнопки)
+                if (isSelected) {
+                    ctx.fillStyle = bgColor; 
+                } else if (isHovered) {
+                    ctx.fillStyle = "#1e1e24"; 
+                } else {
+                    ctx.fillStyle = bgColor;
+                }
                 this.drawRoundedRect(ctx, x, buttonY, buttonW, buttonH, 5);
                 ctx.fill();
 
-                ctx.strokeStyle = isSelected ? "#ffffff" : mainColor;
+                // Сбрасываем тень
+                ctx.shadowBlur = 0;
+
+                // 2 слой: ЦВЕТНОЙ ГРАДИЕНТ
+                const gradient = ctx.createLinearGradient(x, buttonY, x, buttonY + buttonH);
+                if (isSelected) {
+                    gradient.addColorStop(0, glowColor); 
+                    gradient.addColorStop(0.4, glowColor);
+                    gradient.addColorStop(1, "rgba(0, 0, 0, 0.4)");
+                } else if (isHovered) {
+                    gradient.addColorStop(0, mainColor); 
+                    gradient.addColorStop(1, "transparent");
+                } else {
+                    gradient.addColorStop(0, glowColor.replace('0.22', '0.1').replace('0.25', '0.1').replace('0.18', '0.08'));
+                    gradient.addColorStop(1, "transparent");
+                }
+                ctx.fillStyle = gradient;
+                this.drawRoundedRect(ctx, x, buttonY, buttonW, buttonH, 5);
+                ctx.fill();
+
+                // 3 слой: Объемная светящаяся рамка кнопок
                 ctx.lineWidth = isSelected ? 1.5 : 1;
-                ctx.stroke();
+                
+                // ИСПРАВЛЕНО: Если ветка ВЫБРАНА, то рамка ВСЕГДА остается белой, даже при ховере
+                if (isSelected) {
+                    ctx.strokeStyle = "#ffffff"; 
+                    ctx.stroke();
+                } 
+                // Если ветка НЕ выбрана, но на неё НАВЕЛИ мышь — включаем неоновый ховер-эффект
+                else if (isHovered) {
+                    ctx.strokeStyle = mainColor;
+                    ctx.save();
+                    ctx.globalCompositeOperation = "screen"; 
+                    this.drawRoundedRect(ctx, x, buttonY, buttonW, buttonH, 5);
+                    ctx.stroke();
+                    ctx.restore();
+                } 
+                // Базовое состояние неактивной кнопки
+                else {
+                    ctx.strokeStyle = mainColor; 
+                    ctx.stroke();
+                }
+
+                // 4 слой: Тонкий световой блик по верхней грани (Материальный объем)
+                if (isSelected || isHovered) {
+                    ctx.beginPath();
+                    ctx.moveTo(x + 5, buttonY + 0.5);
+                    ctx.lineTo(x + buttonW - 5, buttonY + 0.5);
+                    ctx.strokeStyle = isSelected ? "rgba(255, 255, 255, 0.3)" : "rgba(255, 255, 255, 0.18)";
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                }
 
                 // ОТРИСОВКА ТЕКСТА КНОПКИ
-                ctx.fillStyle = "#000000"; 
                 ctx.textAlign = "center";
 
                 if (spentInTree > 0) {
@@ -116,40 +199,83 @@ export class UIManager {
                         if (node.levelReq > maxTreeSkill) maxTreeSkill = node.levelReq;
                     });
 
-                    // Строка 1: Название ветки (смещаем на 5px выше центра)
-                    ctx.font = isSelected ? "bold 11px 'Segoe UI', Arial" : "11px 'Segoe UI', Arial";
+                    // Строка 1: Название ветки
+                    ctx.fillStyle = "#ffffff";
+                    ctx.font = (isSelected || isHovered) ? "bold 12px 'Segoe UI', Arial" : "12px 'Segoe UI', Arial";
                     ctx.textBaseline = "middle";
                     ctx.fillText(tree.title, x + buttonW / 2, buttonY + (buttonH / 2) - 6);
 
-                    // Строка 2: Характеристики (смещаем на 6px ниже центра, делаем шрифт меньше и блеклым)
-                    ctx.font = "300 12px 'Segoe UI', Arial";
-                    ctx.fillStyle = "rgba(0, 0, 0, 0.65)";
+                    // Строка 2: Характеристики под названием
+                    ctx.font = "300 11px 'Segoe UI', Arial";
+                    ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
                     
-                    // ИСПРАВЛЕНО: Меняем "навык" на "уровень" в зависимости от classType ветки
                     const labelPrefix = tree.classType === "extra" ? "уровень" : "навык";
-                    
                     const subText = maxTreeSkill > 0 
                         ? `${labelPrefix} ${maxTreeSkill} | перков ${spentInTree}` 
                         : `перков ${spentInTree}`;
                         
                     ctx.fillText(subText, x + buttonW / 2, buttonY + (buttonH / 2) + 7);
                 } else {
-                    // ДЕФОЛТНЫЙ РЕЖИМ: Если перков нет — пишем в одну строку ровно по центру
-                    ctx.font = isSelected ? "bold 11px 'Segoe UI', Arial" : "11px 'Segoe UI', Arial";
+                    // ДЕФОЛТНЫЙ РЕЖИМ (Нет перков)
+                    ctx.fillStyle = (isSelected || isHovered) ? "#ffffff" : "rgba(255, 255, 255, 0.8)";
+                    ctx.font = (isSelected || isHovered) ? "bold 12px 'Segoe UI', Arial" : "12px 'Segoe UI', Arial";
                     ctx.textBaseline = "middle";
                     ctx.fillText(tree.title, x + buttonW / 2, buttonY + buttonH / 2);
                 }
 
-                
                 ctx.restore();
 
                 tree.hitBox = { x, y: buttonY, w: buttonW, h: buttonH };
             });
 
-
             const rowsCount = Math.ceil(group.trees.length / 2);
             currentY += rowsCount * (buttonH + gap) + 15;
         }
+        // КНОПКА ЗАМЕТОК ВНИЗУ ЛЕВОГО МЕНЮ
+        const notesX = sidebarPadding;
+        const notesY = ctx.canvas.height - 58;
+        const notesW = (this.sidebarWidth - 30) / 2;
+        const notesH = 36;
+
+        const hasNote = window.rfabNotesManager?.hasNote?.() || false;
+        const isNotesHovered = mousePos &&
+            mousePos.x >= notesX &&
+            mousePos.x <= notesX + notesW &&
+            mousePos.y >= notesY &&
+            mousePos.y <= notesY + notesH;
+
+        const gold = getComputedStyle(document.documentElement)
+            .getPropertyValue('--yellow-main')
+            .trim() || '#f6b36a';
+
+        ctx.save();
+
+        ctx.fillStyle = isNotesHovered
+            ? 'rgba(246, 179, 106, 0.12)'
+            : 'rgba(12, 12, 14, 0.75)';
+
+        this.drawRoundedRect(ctx, notesX, notesY, notesW, notesH, 5);
+        ctx.fill();
+
+        ctx.strokeStyle = hasNote ? gold : 'rgba(255,255,255,0.45)';
+        ctx.lineWidth = hasNote ? 1.5 : 1;
+        ctx.stroke();
+
+        ctx.fillStyle = hasNote ? gold : '#ffffff';
+        ctx.font = isNotesHovered ? "bold 13px 'Segoe UI', Arial" : "13px 'Segoe UI', Arial";
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('Заметки', notesX + notesW / 2, notesY + notesH / 2);
+
+        ctx.restore();
+
+        this.notesButtonHitBox = {
+            x: notesX,
+            y: notesY,
+            w: notesW,
+            h: notesH
+        };
+
     }
 
     drawRoundedRect(ctx, x, y, width, height, radius) {
@@ -157,12 +283,37 @@ export class UIManager {
         ctx.moveTo(x + radius, y);
         ctx.lineTo(x + width - radius, y);
         ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-        ctx.lineTo(x + width, y + height - radius);
-        ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-        ctx.lineTo(x + radius, y + height);
-        ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-        ctx.lineTo(x, y + radius);
-        ctx.quadraticCurveTo(x, y, x + radius, y);
-        ctx.closePath();
+        ctx.lineTo(x + width, y + height - radius);ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);ctx.lineTo(x + radius, y + height);ctx.quadraticCurveTo(x, y + height, x, y + height - radius);ctx.lineTo(x, y + radius);ctx.quadraticCurveTo(x, y, x + radius, y);ctx.closePath();
+    }
+
+    getPerkCounterColor(totalPoints, perkBreakpoints) {
+        const points = Array.isArray(perkBreakpoints)
+            ? perkBreakpoints
+                .map(Number)
+                .filter(n => Number.isFinite(n))
+                .sort((a, b) => a - b)
+            : [];
+
+        if (!points.length || totalPoints < points[0]) {
+            return '#f5f5f7';
+        }
+
+        const crossed = points.filter(p => totalPoints >= p).length;
+        const lastIndex = points.length;
+
+        // Последний брейкпоинт — всегда заметно красный
+        if (crossed >= lastIndex) {
+            return '#ed2f2f';
+        }
+
+        // Ступени до последнего порога
+        const warningColors = [
+            '#f9c286', // 1-й порог: золото
+            '#e89a4f', // 2-й порог: янтарный
+            '#d9793f', // 3-й порог: оранжево-красный
+            '#c95c3a'  // 4-й и далее до последнего: приглушённый красноватый
+        ];
+
+        return warningColors[Math.min(crossed - 1, warningColors.length - 1)];
     }
 }

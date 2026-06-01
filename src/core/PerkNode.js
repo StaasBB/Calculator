@@ -7,7 +7,6 @@ export class PerkNode {
         this.x = data.x || 0;
         this.y = data.y || 0;
         
-        // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Безопасное чтение числового требования уровня навыки из JSON
         this.levelReq = typeof data.levelReq === 'number' ? data.levelReq : 0; 
 
         // Приведение эффектов к массиву строк

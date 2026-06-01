@@ -1,16 +1,27 @@
-import { BuildSaver } from './BuildSaver.js';
-import { BuildExporter } from './BuildExporter.js';
+import { ProfileService } from './ProfileService.js';
+import { ProfileView } from '../rendering/ProfileView.js';
 import { DependencyChecker } from '../utils/DependencyChecker.js';
+import { BuildExporter } from './BuildExporter.js';
+import { NotesManager } from './NotesManager.js';
+import { ToastView } from '../rendering/ToastView.js';
 
 export class ProfileManager {
     constructor(state, onStateChange) {
         this.state = state;
         this.onStateChange = onStateChange;
+        
         this.currentMode = null; 
         this.editingSlotId = null; 
-
-        // Таймер для контроля перевода курсора с кнопки на выпадающий список
         this.leaveTimeout = null;
+        this.isEditingInputFocused = false;
+
+        this.notesManager = new NotesManager(this.onStateChange);
+        this.state.notesManager = this.notesManager;
+        window.rfabNotesManager = this.notesManager;
+
+        // Инициализируем сервисные бэк/фронт слои
+        this.service = new ProfileService();
+        this.view = new ProfileView(document.getElementById('profiles-dropdown-list'));
 
         this.initDOMReferences();
         this.initEvents();
@@ -19,12 +30,9 @@ export class ProfileManager {
     initDOMReferences() {
         this.btnLoad = document.getElementById('trigger-load');
         this.btnSave = document.getElementById('trigger-save');
-        this.dropdown = document.getElementById('profiles-dropdown-list');
     }
 
     initEvents() {
-        // ИСПРАВЛЕНО: При клике на кнопки мы принудительно очищаем старый таймер,
-        // чтобы он не закрывал только что открытое новое окно!
         if (this.btnLoad) {
             this.btnLoad.addEventListener('click', () => {
                 this.clearLeaveTimeout();
@@ -39,25 +47,22 @@ export class ProfileManager {
             });
         }
 
-        // АВТОЗАКРЫТИЕ ПРИ УВОДЕ МЫШИ
-        // 1. Когда мышь заходит внутрь выпадающего списка — отменяем таймер закрытия
-        this.dropdown.addEventListener('mouseenter', () => {
-            this.clearLeaveTimeout();
-        });
+        if (this.view.dropdown) {
+            this.view.dropdown.addEventListener('mouseenter', () => this.clearLeaveTimeout());
+            this.view.dropdown.addEventListener('mouseleave', () => {
+                if (this.isEditingInputFocused) return;
+                this.closeDropdown();
+                this.onStateChange();
+            });
+        }
 
-        // 2. Когда мышь полностью ПОКИДАЕТ выпадающий список — мгновенно закрываем его
-        this.dropdown.addEventListener('mouseleave', () => {
-            this.closeDropdown();
-            this.onStateChange();
-        });
-
-        // 3. Дополнительная защита: если мышь ушла с самих кнопок хедера и не дошла до списка
         const handleButtonLeave = () => {
-            // Сначала на всякий случай очищаем предыдущий таймер, чтобы они не множились
+            if (this.isEditingInputFocused) return;
             this.clearLeaveTimeout();
             
-            // Даем пользователю 500мс, чтобы донести мышь от кнопки до выпавшего списка
+            // Даем пользователю 500мс, чтобы донести мышь от кнопки до списка
             this.leaveTimeout = setTimeout(() => {
+                if (this.isEditingInputFocused) return;
                 this.closeDropdown();
                 this.onStateChange();
             }, 500);
@@ -66,7 +71,6 @@ export class ProfileManager {
         if (this.btnLoad) this.btnLoad.addEventListener('mouseleave', handleButtonLeave);
         if (this.btnSave) this.btnSave.addEventListener('mouseleave', handleButtonLeave);
 
-        // Дополнительная защита: закрываем меню при клике по Canvas-области
         const canvas = document.getElementById('gameCanvas');
         if (canvas) {
             canvas.addEventListener('mousedown', () => {
@@ -75,28 +79,21 @@ export class ProfileManager {
             });
         }
 
-        // ИСПРАВЛЕНО ДЛЯ МОБИЛЬНЫХ: Закрытие меню при тапе в любое место мимо кнопок и списка
+        // Закрытие меню при тапе мимо для мобилок
         window.addEventListener('touchend', (e) => {
-            // Если выпадающее меню сейчас закрыто — ничего не делаем
-            if (!this.dropdown || !this.dropdown.classList.contains('open')) return;
-
-            // Проверяем, пришелся ли тап по кнопкам "Сохранить", "Загрузить" или по самому меню
+            if (!this.view.dropdown || !this.view.dropdown.classList.contains('open')) return;
+            
             const clickedOnLoad = this.btnLoad && this.btnLoad.contains(e.target);
             const clickedOnSave = this.btnSave && this.btnSave.contains(e.target);
-            const clickedInsideDropdown = this.dropdown.contains(e.target);
+            const clickedInsideDropdown = this.view.dropdown.contains(e.target);
 
-            // Если пользователь тапнул МИМО всех этих элементов — мягко закрываем меню
             if (!clickedOnLoad && !clickedOnSave && !clickedInsideDropdown) {
                 this.closeDropdown();
                 this.onStateChange();
             }
         }, { passive: true });
-
     }
 
-    /**
-     * ОПТИМИЗАЦИЯ: Изолированный безопасный метод для сброса таймера
-     */
     clearLeaveTimeout() {
         if (this.leaveTimeout) {
             clearTimeout(this.leaveTimeout);
@@ -105,225 +102,106 @@ export class ProfileManager {
     }
 
     closeDropdown() {
-        if (this.dropdown) {
-            this.dropdown.classList.remove('open');
-            this.editingSlotId = null; 
-            this.clearLeaveTimeout(); // Очищаем таймер при закрытии
-        }
+        this.view.toggle(false);
+        this.editingSlotId = null;
+        this.clearLeaveTimeout();
     }
 
     toggleDropdown(mode) {
-        if (this.dropdown.classList.contains('open') && this.currentMode === mode) {
+        if (this.view.dropdown.classList.contains('open') && this.currentMode === mode) {
             this.closeDropdown();
         } else {
             this.currentMode = mode;
             this.editingSlotId = null; 
             this.renderDropdown();
             
-            this.dropdown.classList.add('open');
-
+            this.view.toggle(true);
             const targetButton = mode === 'load' ? this.btnLoad : this.btnSave;
-            
-            if (targetButton) {
-                const rect = targetButton.getBoundingClientRect();
-                const dropdownWidth = this.dropdown.offsetWidth;
-
-                const topPos = rect.bottom + window.pageYOffset;
-                
-                const buttonCenter = rect.left + (rect.width / 2);
-                let leftPos = buttonCenter - (dropdownWidth / 2);
-
-                if (leftPos < 10) leftPos = 10;
-                if (leftPos + dropdownWidth > window.innerWidth - 10) {
-                    leftPos = window.innerWidth - dropdownWidth - 10;
-                }
-
-                this.dropdown.style.top = `${topPos}px`;
-                this.dropdown.style.left = `${leftPos}px`;
-            }
+            this.view.setPosition(targetButton);
         }
     }
-
-    /**
-     * ИСПРАВЛЕНО: Теперь код корректно оставляет расширенные слоты с данными, 
-     * даже если они оказались последними в массиве.
-     */
-    getSlotsList() {
-        const slots = [];
-        let maxFoundIndex = 3; 
-
-        // 1. Ищем все существующие слоты в LocalStorage
-        for (let i = 1; i < 100; i++) {
-            if (localStorage.getItem(`rfab_profile_slot_${i}`)) {
-                if (i > maxFoundIndex) {
-                    maxFoundIndex = i;
-                }
-            }
-        }
-
-        // 2. Наполняем массив текущими данными
-        for (let i = 1; i <= maxFoundIndex; i++) {
-            const rawData = localStorage.getItem(`rfab_profile_slot_${i}`);
-            let parsedData = null;
-            if (rawData) {
-                try {
-                    parsedData = JSON.parse(rawData);
-                } catch(e) {
-                    console.error(`Поврежденный слот ${i}`, e);
-                }
-            }
-            slots.push({ id: i, data: parsedData });
-        }
-
-        // 3. Если все текущие слоты заняты — ВСЕГДА создаем один следующий пустой слот в конце
-        const hasAnyEmptySlot = slots.some(s => s.data === null);
-        if (!hasAnyEmptySlot) {
-            const nextFreeId = slots.length + 1;
-            slots.push({ id: nextFreeId, data: null });
-        }
-
-        // 4. ИСПРАВЛЕНО: Обрезаем массив до базовых 3 слотов, только если в расширенной зоне 
-        // (все слоты с ID > 3) реально нет ни одной сохраненной записи с данными.
-        if (slots.length > 3) {
-            // Проверяем, есть ли хоть один элемент дальше 3-го слота, в котором лежат РЕАЛЬНЫЕ данные
-            const hasDataInExtendedSlots = slots.some(s => s.id > 3 && s.data !== null);
-            
-            // Если сохраненных данных в расширенных слотах вообще нет — 
-            // мягко обрезаем меню до базовых 3 слотов на экране
-            if (!hasDataInExtendedSlots) {
-                return slots.slice(0, 3);
-            }
-        }
-
-        return slots;
-    }
-
-
-
-
 
     renderDropdown() {
-        this.dropdown.innerHTML = '';
-        const slots = this.getSlotsList();
+        this.view.clear();
+        const slots = this.service.getSlotsList();
 
         slots.forEach(slot => {
-            const item = document.createElement('div');
-            item.className = 'profile-item';
-
             if (this.currentMode === 'save' && this.editingSlotId === slot.id) {
-                const input = document.createElement('input');
-                input.type = 'text';
-                input.className = 'profile-item-input';
-                input.maxLength = 20;
-                input.value = slot.data ? slot.data.name : `Билд ${slot.id}`;
-                
-                const saveBtn = document.createElement('button');
-                saveBtn.className = 'profile-item-save-btn';
-                saveBtn.textContent = 'OK';
-                
-                const cancelBtn = document.createElement('button');
-                cancelBtn.className = 'profile-item-cancel-btn';
-                cancelBtn.innerHTML = '&times;';
-
-                item.appendChild(input);
-                item.appendChild(saveBtn);
-                item.appendChild(cancelBtn);
-
-                item.addEventListener('click', (e) => e.stopPropagation());
-
-                saveBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    this.executeSave(slot.id, input.value.trim());
-                });
-
-                input.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        this.executeSave(slot.id, input.value.trim());
+                this.view.createEditItem(
+                    slot,
+                    (nameInput) => this.executeSave(slot.id, nameInput), // Нажали OK
+                    () => { // Cancel
+                        this.isEditingInputFocused = false;
+                        this.editingSlotId = null;
+                        this.renderDropdown();
+                    },
+                    () => { // Focus
+                        this.isEditingInputFocused = true;
+                        this.clearLeaveTimeout();
                     }
-                });
-
-                cancelBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    this.editingSlotId = null;
-                    this.renderDropdown();
-                });
-
+                );
             } else {
-                const nameDiv = document.createElement('div');
-                nameDiv.className = 'profile-item-name';
-                
-                if (slot.data) {
-                    nameDiv.textContent = `Слот ${slot.id}: ${slot.data.name}`;
-                } else {
-                    nameDiv.className += ' empty';
-                    nameDiv.textContent = `Слот ${slot.id}: [Пустой слот]`;
-                }
-
-                item.appendChild(nameDiv);
-
-                if (slot.data) {
-                    const delSpan = document.createElement('span');
-                    delSpan.className = 'profile-item-delete';
-                    delSpan.innerHTML = '&times;';
-                    delSpan.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        localStorage.removeItem(`rfab_profile_slot_${slot.id}`);
+                this.view.createStandardItem(
+                    slot,
+                    this.currentMode,
+                    () => { // Delete
+                        this.service.deleteSlot(slot.id);
                         this.renderDropdown();
-                    });
-                    item.appendChild(delSpan);
-                }
-                
-                item.addEventListener('click', () => {
-                    if (this.currentMode === 'save') {
-                        this.editingSlotId = slot.id;
-                        this.renderDropdown();
-                        setTimeout(() => {
-                            const activeInput = item.querySelector('.profile-item-input');
-                            if (activeInput) activeInput.focus();
-                        }, 20);
-                    } else if (this.currentMode === 'load' && slot.data) {
-                        this.executeLoad(slot.data.build);
+                        ToastView.show("Слот удалён");
+                    },
+                    () => { // Клик по строке профиля
+                        if (this.currentMode === 'save') {
+                            this.isEditingInputFocused = true;
+                            this.editingSlotId = slot.id;
+                            this.renderDropdown();
+                        } else if (this.currentMode === 'load' && slot.data) {
+                            this.executeLoad(slot.data.build, slot.id);
+                        }
                     }
-                });
+                );
             }
-
-            this.dropdown.appendChild(item);
         });
     }
 
-    executeSave(slotId, nameInput) {
-        const name = nameInput || `Билд ${slotId}`;
-        
-        // Генерируем короткий бинарный хэш без дефисов
-        const compressedBuildHash = BuildExporter.generateGlobalHash(this.state.allTrees);
+executeSave(slotId, nameInput) {
+    this.service.saveSlot(
+        slotId,
+        nameInput,
+        this.state.allTrees,
+        this.notesManager.getNote()
+    );
 
-        const saveData = {
-            name: name,
-            build: compressedBuildHash
-        };
+    const savedSlot = this.service.getSlotData(slotId);
+    this.notesManager.setSlot(slotId, savedSlot?.note || '');
 
-        localStorage.setItem(`rfab_profile_slot_${slotId}`, JSON.stringify(saveData));
-        
-        this.closeDropdown(); 
-        this.onStateChange();
-    }
+    ToastView.show("Билд сохранён");
 
-    executeLoad(buildHash) {
-        // Прямое применение нового битового хэша без проверок на старые массивы
+    this.isEditingInputFocused = false;
+    this.editingSlotId = null;
+    this.renderDropdown();
+    this.onStateChange();
+}
+
+    executeLoad(buildHash, slotId = null) {
         if (typeof buildHash === 'string') {
             BuildExporter.applyGlobalHash(this.state.allTrees, buildHash);
         }
 
-        // Валидация зависимостей перков после загрузки нового состояния
         this.state.allTrees.forEach(t => DependencyChecker.validate(t));
-        
-        // Обновление глобального автосейва в LocalStorage
-        if (typeof BuildSaver !== 'undefined' && BuildSaver.saveToLocalStorage) {
-            BuildSaver.saveToLocalStorage(this.state.allTrees);
+
+        import('./BuildSaver.js').then(({ BuildSaver }) => {
+            if (BuildSaver && BuildSaver.saveToLocalStorage) {
+                BuildSaver.saveToLocalStorage(this.state.allTrees);
+            }
+        }).catch(() => {});
+
+        if (slotId !== null) {
+            const slotData = this.service.getSlotData(slotId);
+            this.notesManager.setSlot(slotId, slotData?.note || '');
         }
-        
+
         this.closeDropdown();
+        ToastView.show("Билд загружен");
         this.onStateChange();
     }
 }

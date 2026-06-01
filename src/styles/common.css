@@ -16,56 +16,64 @@
 }*/
 
 :root {
-    /* Красный: глубокий и сочный розово-красный */
-    --red: #c0392b;
-    --light-red: #ffb3ba;
+    /* --- КРАСНЫЙ СПЕКТР (RED) --- */
+    --red-main: #9c2a2a;         /* Плотный рубиново-красный */
+    --red-bg: #1a0d0d;           /* Едва заметный красный оттенок подложки */
+    --red-border: #441a1a;       /* Темно-бордовый кованый бортик */
+    --red-glow: rgba(178, 59, 59, 0.22); /* Рассеянное бархатное свечение */
 
-    /* Зеленый: изумрудный и яркий салатовый */
-    --green: #27ae60;
-    --light-green: #baffc9;
+    /* --- ЗЕЛЕНЫЙ СПЕКТР (GREEN) --- */
+    --green-main: #20803d;       /* Глубокий изумрудно-хвойный */
+    --green-bg: #0c120e;         /* Темная лесная подложка */
+    --green-border: #183d25;     /* Малахитовый бортик */
+    --green-glow: rgba(46, 125, 70, 0.22);
 
-    /* Синий: сапфировый и насыщенный небесный */
-    --blue: #2980b9;
-    --light-blue: #bae1ff;
+    /* --- СИНИЙ СПЕКТР (BLUE) --- */
+    --blue-main: #3b6fb2;        /* Сапфирово-синий */
+    --blue-bg: #0d111a;          /* Глубокая ночная подложка */
+    --blue-border: #1a2f4c;      /* Темно-синяя граница */
+    --blue-glow: rgba(59, 111, 178, 0.25);
 
-    /* Желтый: горчичный и чистый банановый */
-    --yellow: #d4ac0d;
-    --light-yellow: #ffffba;
+    /* --- ЖЕЛТЫЙ СПЕКТР (YELLOW) --- */
+    --yellow-main: #b28f3b;      /* Приглушенный янтарно-желтый */
+    --yellow-bg: #1a150d;        /* Теплая смоляная подложка */
+    --yellow-border: #44371a;    /* Охристая граница */
+    --yellow-glow: rgba(178, 143, 59, 0.18);
 
-    /* Фиолетовый: черничный и сочная карамельная лаванда */
-    --purple: #7d3c98;
-    --light-purple: #e1bfff;
+    /* --- ФИОЛЕТОВЫЙ СПЕКТР (PURPLE) --- */
+    --purple-main: #6f3bb2;      /* Насыщенный аметистовый */
+    --purple-bg: #120d1a;        /* Темно-черничная подложка */
+    --purple-border: #2f1a4c;    /* Сумеречная граница */
+    --purple-glow: rgba(111, 59, 178, 0.25);
 }
-
-
-
-
 
 
 
 html, body {
-    height: 100%;
+    width: 100%;
+    min-height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    margin: 0px;
-    overflow-y: auto; /* ИСПРАВЛЕНО: Разрешаем вертикальный скролл страницы */
+    margin: 0;
     background-image: url("../assets/background.jpg");
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center center;
     background-attachment: fixed;
+
     display: flex;
     flex-direction: column;
-    align-items: stretch; /* ИСПРАВЛЕНО: Заставляет все дочерние блоки (включая футер) принудительно растянуться до краев */
-    
-    min-height: 100%; /* ИСПРАВЛЕНО: Чтобы фон не обрезался */
+    align-items: stretch;
+    min-height: 100vh;
 }
 
 
 main {
-    flex: 1;
+    flex: 0 0 auto;
 }
 
 a {
@@ -78,8 +86,42 @@ a {
     scrollbar-color: #f6b36a rgba(0, 0, 0, 0.85);
 }
 
+
+#rfab-toast {
+    position: fixed;
+    left: 50%;
+    top: 120px;
+    transform: translateX(-50%) translateY(12px);
+
+    padding: 10px 16px;
+    border-radius: 6px;
+
+    background: rgba(12, 12, 14, 0.96);
+    border: 1px solid #f6b36a;
+    box-shadow: 0 8px 24px rgba(0,0,0,.7), 0 0 8px rgba(246,179,106,.25);
+
+    color: #ffffff;
+    font: 14px 'Segoe UI', Arial;
+
+    opacity: 0;
+    pointer-events: none;
+    z-index: 9999;
+
+    transition: opacity .18s ease, transform .18s ease;
+}
+
+#rfab-toast.visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+#rfab-toast.error {
+    border-color: rgba(239, 71, 71, 0.75);
+    box-shadow: 0 8px 24px rgba(0,0,0,.7), 0 0 8px rgba(239,71,71,.35);
+}
+
 /* ==========================================================================
-   2. ОРИГИНАЛЬНЫЙ МНОГОСЛОЙНЫЙ HEADER RFAB
+   2. МНОГОСЛОЙНЫЙ HEADER RFAB
    ========================================================================== */
 header {
     background: transparent;
@@ -99,8 +141,6 @@ header::before {
     position: absolute;
     inset: 0;
     background-color: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
     z-index: -2;
 }
 
@@ -138,8 +178,8 @@ header::before {
 
 .header-link {
     font-family: 'Oswald', sans-serif;
-    font-weight: 400; /* Буквы тонкие и аккуратные, как в оригинале */
-    font-size: 14px;
+    font-weight: 400;
+    font-size: 16px;
     position: relative;
     color: white;
     padding: 18px 24px;
@@ -149,17 +189,21 @@ header::before {
     text-decoration: none;
     overflow: hidden;
     box-sizing: border-box;
+    justify-content: center;
+    text-align: center;
+    line-height: 20px;
+
+
 }
 
 .header-link.double-row {
     flex-direction: column;
     justify-content: center;
     text-align: center;
-    line-height: 15px;
-    font-size: 12.5px;
+    line-height: 20px;
+    font-size: 16px;
 }
 
-/* Плавный золотой градиент наведения */
 .header-link::after {
     content: "";
     position: absolute;
@@ -183,19 +227,17 @@ header::before {
 }
 
 /* =========================================================================
- 3. ОФИЦИАЛЬНАЯ ПАНЕЛЬ UTILITIES BAR (ВТОРОЙ ХЕДЕР) - ПОДОГНАНА ПОД ОФ. САЙТ
+ 3. ПАНЕЛЬ UTILITIES BAR
 ========================================================================= */
 
 .tab-bar.app-utilities-bar {
-    background-color: rgba(0, 0, 0, 0.8); /* Взято с оф. сайта */
+    background-color: rgba(0, 0, 0, 0.8);
     display: flex;
     justify-content: center;
-    /*padding: 0 6px;                           Взято с оф. сайта */
-    gap: 6px;                              /* Взято с оф. сайта */
-    position: sticky;                      /* Изменено fixed -> sticky */
-    top: 60px;                             /* Взято с оф. сайта */
-    z-index: 100;                          /* Подняли z-index до 100 */
-    /* ИСПРАВЛЕНО: Элемент теперь занимает ровно всю ширину экрана без вылетов */
+
+    position: fixed;
+    top: 60px;
+    z-index: 100;
     width: 100%; 
     box-sizing: border-box; 
 
@@ -223,13 +265,8 @@ header::before {
     /* Поднимаем панель с кнопками на самый верх экрана */
     .tab-bar.app-utilities-bar {
         justify-content: flex-start;
-        top: 0px; /* Прижимается к верхнему краю телефона */
-        position: fixed; /* Меняем на fixed, чтобы кнопки оставались на месте при скролле */
-    }
-
-    #canvas-container {
-        margin-top: 52px !important; /* Ровно под высоту утилитарной панели */
-        height: calc(100vh - 57px);  /* Занимает всё оставшееся пространство экрана */
+        top: 0px;
+        position: fixed;
     }
 }
 
@@ -237,17 +274,25 @@ header::before {
 /* Стилизация кнопок утилит */
 .tab-bar.app-utilities-bar .tab-button {
     position: relative;
-    padding: 16px 18px;                    /* Взято с оф. сайта */
-    font-size: 16px;                       /* Взято с оф. сайта */
+    min-height: 52px;
+    padding: 0px 18px;
+
+    font-size: 16px;
+    line-height: 18px;
     color: #ddd;
+
     background: transparent;
     border: none;
-    border-bottom: 2px solid transparent;  /* Появилась нижняя граница под активные табы */
     cursor: pointer;
-    white-space: nowrap;                   /* КРИТИЧНО: кнопки не будут переноситься на новую строку при скролле */
+
+    white-space: nowrap;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
 }
 
-/* Эффект наведения (золотой градиент) */
 .tab-bar.app-utilities-bar .tab-button::after {
     content: "";
     position: absolute;
@@ -266,20 +311,36 @@ header::before {
     outline: none;
 }
 
-/* Сохраняем вашу оригинальную стилизацию опасной кнопки "Сбросить всё" */
+/* Исходное статичное состояние кнопки — сочный красный цвет */
 .tab-bar.app-utilities-bar .tab-button.btn-danger {
-    color: var(--light-red);
+    color: #ef4747 !important; 
     transition: all 0.3s ease;
 }
 
+/* Градиент наведения на основе оригинального стиля хедера */
 .tab-bar.app-utilities-bar .tab-button.btn-danger::after {
-    background: linear-gradient(rgba(150, 40, 27, 0.4), transparent) !important;
+    background: linear-gradient(rgba(239, 71, 71, 0.45), transparent) !important;
 }
 
 .tab-bar.app-utilities-bar .tab-button.btn-danger:hover {
     color: #ffffff !important;
 }
 
+@media (max-width: 1060px) {
+    .tab-bar.app-utilities-bar .tab-button {
+        white-space: normal;
+        max-width: 130px;
+    }
+}
+
+@media (max-width: 790px) {
+    .tab-bar.app-utilities-bar .tab-button {
+        max-width: 115px;
+        padding-left: 6px;
+        padding-right: 6px;
+        font-size: 14px;
+    }
+}
 
 /* ==========================================================================
    4. КОНТЕЙНЕР ХОЛСТА И ДИНАМИЧЕСКИЙ ТУЛТИП ОПИСАНИЙ
@@ -287,18 +348,19 @@ header::before {
 #canvas-container {
     width: 100% !important;
     max-width: 100vw !important;
-    height: auto;
-    margin-top: 60px;
-    margin-bottom: 40px;
+    height: auto !important;
+    max-height: none !important;
+    min-height: 0 !important;
+
+    margin-top: 112px;
+    margin-bottom: 0;
+
     display: flex;
-    
-    /* НА ПК: калькулятор стоит строго по центру игрового окна */
-    justify-content: center; 
+    justify-content: safe center;
     align-items: flex-start;
-    
-    /* Если вдруг на ПК экран станет слишком узким, разрешаем локальный скролл */
-    overflow-x: auto !important; 
-    overflow-y: visible;
+
+    overflow-x: auto !important;
+    overflow-y: visible !important;
 }
 
 /* На ПК сбрасываем автоматические маргины у канваса, доверяя выравнивание флексбоксу */
@@ -309,16 +371,17 @@ header::before {
     background-color: transparent;
     image-rendering: pixelated;
     image-rendering: crisp-edges;
+    image-rendering: auto;
 }
 canvas {
     display: block;
-    touch-action: auto !important; /* ИСПРАВЛЕНО: Разрешаем нативный скролл поверх канваса */
+    touch-action: auto !important;
     background-color: transparent;
     image-rendering: pixelated;
     image-rendering: crisp-edges;
     /* Отключает появление паразитной подсветки элементов при тапе на iOS */
     -webkit-tap-highlight-color: transparent; 
-    /* ДОБАВЛЕНО: Гарантирует правильную точку старта скролла на мобильных при центрировании родителя */
+    /*Гарантирует правильную точку старта скролла на мобильных при центрировании родителя */
     margin: 0 auto; 
 }
 
@@ -348,16 +411,145 @@ canvas {
     transform: translateY(0);
 }
 
+
+/* ==========================================================================
+   ОБНОВЛЕННЫЙ ИНТЕРФЕЙС ЛЕВОГО МЕНЮ
+   ========================================================================== */
+
+/* Базовый контейнер или класс для кнопок меню*/
+.sidebar-button-choice {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 14px 20px;
+    margin-bottom: 12px;
+    border-radius: 6px;
+    background: #131316; /* Глубокий темный фон неактивной карточки */
+    border: 1.5px solid rgba(255, 255, 255, 0.04);
+    color: rgba(255, 255, 255, 0.65);
+    font-size: 15px;
+    font-weight: 500;
+    text-decoration: none;
+    overflow: hidden;
+    z-index: 1;
+    transition: color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+}
+
+/* Эффект градиента сверху вниз (адаптировано из .header-link::after) */
+.sidebar-button-choice::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    /* По дефолту прозрачный градиент, цвет подменяется ниже через переменные */
+    background: linear-gradient(var(--tree-glow-color, rgba(255, 255, 255, 0.02)), transparent);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    z-index: -1;
+}
+
+/* Тонкий световой блик на верхней грани для материальности */
+.sidebar-button-choice::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 6px;
+    right: 6px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+/* --- СОСТОЯНИЕ HOVER (НАВЕДЕНИЕ МЫШИ ДЛЯ ПК) --- */
+.sidebar-button-choice:hover {
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.15);
+    background: #18181c;
+}
+
+.sidebar-button-choice:hover::after {
+    opacity: 0.5; /* Слегка проявляем цветной верхний градиент при наведении */
+}
+
+/* --- СОСТОЯНИЕ ACTIVE / SELECTED (ВЫБРАННАЯ ВЕТКА) --- */
+.sidebar-button-choice.active, 
+.sidebar-button-choice:active {
+    color: #ffffff;
+    font-weight: 700;
+    background: var(--tree-bg-color, #131316); /* Подложка с легким оттенком спектра */
+    border-color: var(--tree-main-color, #cda869); /* Граница горит цветом ветки */
+    
+    /* Мягкое рассеянное свечение наружу (Subtle Glow) */
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5), 
+                0 0 14px var(--tree-glow-color, rgba(205, 168, 105, 0.15));
+}
+
+.sidebar-button-choice.active::after {
+    opacity: 1; /* Полностью включаем градиент из хедера */
+}
+
+.sidebar-button-choice.active::before {
+    opacity: 1; /* Зажигаем верхний световой блик */
+}
+
+
+/* ==========================================================================
+   ДИНАМИЧЕСКИЙ МАППИНГ ЦВЕТОВ НА КАРТОЧКИ (ИЗ JSON themeColor)
+   ========================================================================== */
+
+/* Красная ветка (Red) */
+.sidebar-button-choice.red,
+.sidebar-button-choice[data-theme="red"] {
+    --tree-main-color: var(--red-main);
+    --tree-bg-color: var(--red-bg);
+    --tree-glow-color: var(--red-glow);
+}
+
+/* Зеленая ветка (Green) */
+.sidebar-button-choice.green,
+.sidebar-button-choice[data-theme="green"] {
+    --tree-main-color: var(--green-main);
+    --tree-bg-color: var(--green-bg);
+    --tree-glow-color: var(--green-glow);
+}
+
+/* Синяя ветка (Blue) */
+.sidebar-button-choice.blue,
+.sidebar-button-choice[data-theme="blue"] {
+    --tree-main-color: var(--blue-main);
+    --tree-bg-color: var(--blue-bg);
+    --tree-glow-color: var(--blue-glow);
+}
+
+/* Желтая ветка (Yellow) */
+.sidebar-button-choice.yellow,
+.sidebar-button-choice[data-theme="yellow"] {
+    --tree-main-color: var(--yellow-main);
+    --tree-bg-color: var(--yellow-bg);
+    --tree-glow-color: var(--yellow-glow);
+}
+
+/* Фиолетовая ветка (Purple) */
+.sidebar-button-choice.purple,
+.sidebar-button-choice[data-theme="purple"] {
+    --tree-main-color: var(--purple-main);
+    --tree-bg-color: var(--purple-bg);
+    --tree-glow-color: var(--purple-glow);
+}
+
+
 /* =========================================================================
- 5. ОФИЦИАЛЬНЫЙ ФУТЕР RFAB - ПОЛНЫЙ СТИЛЬ (Высота 84px: 44px + 20px падинги)
+ 5. ФУТЕР RFAB
 ========================================================================= */
 
 footer {
     background-color: rgba(0, 0, 0, 0.8);
     width: 100% !important;
-    max-width: 100vw !important; /* Намертво запирает элемент в границах экрана */
+    max-width: 100vw !important; /* запирает элемент в границах экрана */
     
-    /* ИСПРАВЛЕНО: Задаем итоговую высоту 84px напрямую */
     height: 84px !important; 
     
     display: flex;
@@ -366,7 +558,6 @@ footer {
     justify-content: center;
     align-items: center; 
     
-    /* Оставляем падинги, теперь они вжимаются внутрь */
     padding: 20px 20px; 
     
     /* ИСПРАВЛЕНО: Меняем на border-box, чтобы падинги не раздували ширину футера наружу */
@@ -374,17 +565,17 @@ footer {
     z-index: 100;
 }
 
-/* СТИЛИЗАЦИЯ ДВУХСТРОЧНОГО ТЕКСТА (2 строки по 22px) */
+/* СТИЛИЗАЦИЯ ДВУХСТРОЧНОГО ТЕКСТА */
 .footer-text {
     display: grid;
-    grid-template-rows: 22px 22px; /* Ровно две строки по 22px */
+    grid-template-rows: 22px 22px;
     align-items: center;
     justify-content: center;
     text-align: center;
     font-family: 'Oswald', sans-serif;
     font-weight: 400;
-    margin-left: 40px;  /* Отступы по бокам, чтобы текст красиво */
-    margin-right: 40px; /* отделялся от логотипа и соцсетей */
+    margin-left: 40px;  /* Отступы по бокам, чтобы текст красиво отделялся от логотипа и соцсетей*/
+    margin-right: 40px;
 }
 
 footer p {
@@ -401,15 +592,15 @@ footer p {
 /* Настройка ссылок: подчеркивание есть изначально */
 footer p a {
     color: white;
-    text-decoration: underline; /* ИСПРАВЛЕНО: теперь подчеркнуто по умолчанию */
+    text-decoration: underline;
 }
 
 /* При наведении: подчеркивание пропадает */
 footer p a:hover {
-    text-decoration: none; /* ИСПРАВЛЕНО: убираем линию при наведении */
+    text-decoration: none;
 }
 
-/* РАЗМЕР ОРИГИНАЛЬНОГО ЛОГОТИПА (30px) */
+/* РАЗМЕР ЛОГОТИПА (30px) */
 footer .header-img-a {
     display: inline-flex;
     align-items: center;
@@ -426,7 +617,7 @@ footer .header-img-a .header-img {
 footer .header-social-platforms {
     display: flex;
     align-items: center;
-    gap: 12px; /* Расстояние между иконками */
+    gap: 20px; /* Расстояние между иконками */
     height: 100%;
 }
 
@@ -448,7 +639,7 @@ footer .header-social-platforms .header-img {
     border-radius: 5px;
     max-height: 260px;
     overflow-y: auto;
-    position: fixed; /* Фиксировано по расчетным координатам из JS */
+    position: fixed;
     width: 320px; 
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
     z-index: 200; 
@@ -488,13 +679,19 @@ footer .header-social-platforms .header-img {
 }
 
 .profile-item-delete {
-    color: var(--red);
+    color: var(--red-main);
     font-size: 18px;
     font-weight: bold;
     padding: 0 5px;
     cursor: pointer;
-    opacity: 0.6;
-    transition: opacity 0.2s ease;
+    opacity: 0.75;
+    transition: opacity 0.2s ease, color 0.2s ease, text-shadow 0.2s ease;
+}
+
+.profile-item-delete:hover {
+    color: #ef4747;
+    opacity: 1;
+    text-shadow: 0 0 8px rgba(239, 71, 71, 0.7);
 }
 
 .profile-item-delete:hover {
@@ -577,9 +774,45 @@ footer .header-social-platforms .header-img {
     z-index: 200; 
 }
 
+/* =============================
+ЗАМЕТКИ
+============================= */
+.notes-panel {
+    display: none;
+    width: min(960px, calc(100vw - 24px));
+    max-width: calc(100vw - 24px);
+    margin: 8px auto 8px auto;
+    box-sizing: border-box;
+    
+}
+
+.notes-panel.open {
+    display: block;
+}
+
+.notes-textarea {
+    width: 100%;
+    min-height: 120px;
+    max-height: calc(100vh - 800px - 216px); /* максимально до футера */
+    resize: none; /* запрещаем ручной ресайз */
+    overflow-y: auto;
+
+    background: #111113;
+    border: 1px solid #f6b36a; 
+    border-radius: 6px;
+    padding: 8px;
+
+    color: #f5f5f7;
+    font: 14px 'Segoe UI', Arial;
+    line-height: 20px;
+    box-sizing: border-box;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
+}
+
+/* +++++++++++++++++++++++++++++ */
 @media (hover: none) and (pointer: coarse) {
     
-        #calculator-tooltip {
+    #calculator-tooltip {
         /* Палец сможет зацепить тултип и прокрутить текст внутри него */
         pointer-events: auto !important; 
         /* Делаем тултип чуть пошире на экранах телефонов для удобства чтения */
@@ -604,7 +837,7 @@ footer .header-social-platforms .header-img {
         overflow-y: visible !important; /* Разрешаем вертикальный рост контента */
     }
 
-    /* На мобильных канвас намертво крепится к левому верхнему углу */
+    /* На мобильных канвас крепится к левому верхнему углу */
     #gameCanvas {
         margin: 0 !important; 
     }
@@ -618,13 +851,18 @@ footer .header-social-platforms .header-img {
         height: 84px !important;
         box-sizing: border-box !important; 
         
-        /* ИСПРАВЛЕНО: Гарантируем, что футер идет в обычном потоке строго ПОД контейнером */
+        /* Гарантируем, что футер идет в обычном потоке строго ПОД контейнером */
         position: relative !important; 
-        margin-top: 40px !important; /* Красивый отступ между концом калькулятора и футером */
+        
         justify-content: space-between !important; 
     }
     
     .footer-text {
         display: none !important; 
     }
+
+    #rfab-toast {
+        top: 60px
+    }
+
 }
